@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import axios from "axios"; // Add axios for API requests
 
+// Declaração do tipo para o Cloudinary
+declare global {
+    interface Window {
+        cloudinary: any;
+    }
+}
+
 interface ImageUploaderProps {
     value: string;
     onChange: (url: string, publicId?: string) => void; // Updated to include public_id
@@ -34,12 +41,16 @@ export default function ImageUploader({
     // Sync publicId when initialPublicId changes
     useEffect(() => {
         setPublicId(initialPublicId || null);
-    }, [initialPublicId]);
-
-    const handleUploadClick = async () => {
-        // Inicializa o widget do Cloudinary
+    }, [initialPublicId]);    const handleUploadClick = async () => {
+        console.log("handleUploadClick called");
+        console.log("window.cloudinary available:", typeof window !== "undefined" && !!window.cloudinary);
+          // Inicializa o widget do Cloudinary
         if (typeof window !== "undefined") {
-            // @ts-expect-error - Cloudinary é carregado via script externo
+            if (!window.cloudinary) {
+                console.error("Cloudinary widget not loaded. Make sure the Cloudinary script is included.");
+                return;
+            }
+
             const widget = window.cloudinary?.createUploadWidget(
                 {
                     cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,

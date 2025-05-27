@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,6 +21,10 @@ export default function RootLayout({
             <body className={inter.className} suppressHydrationWarning>
                 {children}
                 <Toaster richColors position="top-right" />
+                <Script
+                    src="https://widget.cloudinary.com/v2.0/global/all.js"
+                    strategy="lazyOnload"
+                />
             </body>
         </html>
     );
