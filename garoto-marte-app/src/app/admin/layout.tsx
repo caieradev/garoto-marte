@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import Script from "next/script";
 
 export const metadata: Metadata = {
     title: "Painel Admin - Garoto Marte",
@@ -23,6 +24,12 @@ export default function AdminLayout({
                     © {new Date().getFullYear()} Garoto Marte. Todos os direitos reservados.
                 </div>
             </footer>
+
+            {/* Script do Cloudinary Upload Widget */}
+            <Script
+                src="https://upload-widget.cloudinary.com/global/all.js"
+                strategy="beforeInteractive"
+            />
         </div>
     );
 }

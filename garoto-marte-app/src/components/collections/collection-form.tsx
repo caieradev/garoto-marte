@@ -18,7 +18,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Collection, CollectionFormData } from "@/lib/types";
-import { useState } from "react";
 
 // Schema de validação do formulário
 const formSchema = z.object({
@@ -30,7 +29,7 @@ const formSchema = z.object({
     description: z.string().max(500, {
         message: "A descrição não pode ter mais de 500 caracteres.",
     }).optional(),
-    active: z.boolean().default(true),
+    active: z.boolean(),
 });
 
 interface CollectionFormProps {
@@ -44,7 +43,7 @@ export default function CollectionForm({
     onSubmit,
     isSubmitting
 }: CollectionFormProps) {
-    const [isActive, setIsActive] = useState(initialData?.active ?? true);
+    // Removido estado isActive pois não é utilizado
 
     // Define o formulário usando react-hook-form com zodResolver
     const form = useForm<z.infer<typeof formSchema>>({
@@ -123,10 +122,7 @@ export default function CollectionForm({
                             <FormControl>
                                 <Switch
                                     checked={field.value}
-                                    onCheckedChange={(checked) => {
-                                        field.onChange(checked);
-                                        setIsActive(checked);
-                                    }}
+                                    onCheckedChange={field.onChange}
                                 />
                             </FormControl>
                         </FormItem>

@@ -21,10 +21,9 @@ export function PageHeader({
     backLabel = "Voltar"
 }: PageHeaderProps) {
     return (
-        <div className="flex flex-col gap-4 mb-8">
-            {backHref && (
+        <div className="flex flex-col gap-4 mb-8">            {backHref && (
                 <div>
-                    <Link href={backHref} passHref>
+                    <Link href={backHref}>
                         <Button variant="outline" size="sm" className="mb-2">
                             <ChevronLeft className="h-4 w-4 mr-1" />
                             {backLabel}

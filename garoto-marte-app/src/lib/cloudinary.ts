@@ -2,7 +2,8 @@
 export const uploadProductImage = async (file: File): Promise<string> => {
     try {
         const formData = new FormData();
-        formData.append('file', file);
+        const sanitizedFileName = file.name.replace(/\./g, ""); // Remove all dots from the file name
+        formData.append('file', new File([file], sanitizedFileName, { type: file.type }));
         formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'garoto_marte');
 
         const response = await fetch(
