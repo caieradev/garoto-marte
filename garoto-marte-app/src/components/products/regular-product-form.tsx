@@ -131,7 +131,7 @@ export default function RegularProductForm({
                 waist: undefined,
             },
         };
-    };    const form = useForm<RegularProductFormData, unknown, RegularProductFormData>({
+    }; const form = useForm<RegularProductFormData, unknown, RegularProductFormData>({
         resolver: zodResolver(regularProductSchema),
         defaultValues: getDefaultValues(),
     });
@@ -180,7 +180,7 @@ export default function RegularProductForm({
         const updatedImages = [...currentImages, ...files];
         form.setValue("imageUrls", updatedImages);
         console.log("Updated imageUrls:", updatedImages); // Debug log to verify updates
-    };    const handleRemoveImage = async (indexToRemove: number) => {
+    }; const handleRemoveImage = async (indexToRemove: number) => {
         const currentImages = form.getValues("imageUrls") || [];
         const imageToRemove = currentImages[indexToRemove];
 
@@ -213,7 +213,7 @@ export default function RegularProductForm({
             // Don't mark as submitted if there's an error
             throw error;
         }
-    };    return (
+    }; return (
         <Fragment>
             {/* Dirty state indicator */}
             {isDirty && (
@@ -263,9 +263,7 @@ export default function RegularProductForm({
                                         <FormMessage />
                                     </FormItem>
                                 )}
-                            />
-
-                            <FormField
+                            />                            <FormField
                                 control={form.control}
                                 name="price"
                                 render={({ field }) => (
@@ -276,8 +274,11 @@ export default function RegularProductForm({
                                                 type="number"
                                                 step="0.01"
                                                 placeholder="0.00"
-                                                {...field}
-                                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                                value={field.value === 0 ? "" : field.value}
+                                                onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : 0)}
+                                                onBlur={field.onBlur}
+                                                name={field.name}
+                                                ref={field.ref}
                                             />
                                         </FormControl>
                                         <FormMessage />

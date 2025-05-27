@@ -1,5 +1,7 @@
 import { Metadata } from "next";
-import Script from "next/script";
+import { AuthProvider } from "@/contexts/auth-context";
+import { AdminGuard } from "@/components/auth/admin-guard";
+import AdminLayoutWrapper from "@/components/admin/admin-layout-wrapper";
 
 export const metadata: Metadata = {
     title: "Painel Admin - Garoto Marte",
@@ -12,24 +14,12 @@ export default function AdminLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <div className="flex min-h-screen flex-col bg-background text-foreground">
-            <header className="border-b border-border/40 bg-card">
-                <div className="container flex h-16 items-center justify-between px-4">
-                    <h1 className="text-xl font-bold">Garoto Marte - Admin</h1>
-                </div>
-            </header>
-            <main className="flex-1 container mx-auto p-6">{children}</main>
-            <footer className="border-t border-border/40 bg-card py-4">
-                <div className="container text-center text-sm text-muted-foreground">
-                    © {new Date().getFullYear()} Garoto Marte. Todos os direitos reservados.
-                </div>
-            </footer>
-
-            {/* Script do Cloudinary Upload Widget */}
-            <Script
-                src="https://upload-widget.cloudinary.com/global/all.js"
-                strategy="beforeInteractive"
-            />
-        </div>
+        <AuthProvider>
+            <AdminGuard>
+                <AdminLayoutWrapper>
+                    {children}
+                </AdminLayoutWrapper>
+            </AdminGuard>
+        </AuthProvider>
     );
 }
