@@ -1,11 +1,24 @@
-/* Correções para evitar scroll lateral */
-html,
+/* Correções para evitar scroll lateral e scroll duplicado */
+html {
+    max-width: 100vw;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    /* Apenas um scrollbar no html */
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
 body {
     max-width: 100vw;
     overflow-x: hidden;
+    /* Permite o scroll vertical mas remove o horizontal */
     margin: 0;
     padding: 0;
     position: relative;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 * {

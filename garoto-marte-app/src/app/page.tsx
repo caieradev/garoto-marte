@@ -1,7 +1,6 @@
 import { FavoritesSection } from "@/components/home/favorites-section";
+import { GalerySection } from "@/components/home/galery-section";
 import { HeroSection } from "@/components/home/hero-section";
-import { Footer } from "@/components/layout/footer";
-import { Navbar } from "@/components/layout/navbar";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -15,6 +14,7 @@ export default function HomePage() {
             <main className="flex-1">
                 <HeroSection />
                 <FavoritesSection />
+                <GalerySection />
                 {/* Aqui podem ser adicionadas outras seções conforme necessário */}
             </main>
         </>

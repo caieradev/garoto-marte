@@ -19,25 +19,25 @@ export function Footer() {
     };
 
     return (
-        <footer className="bg-black text-white">
-            <div className="relative">
+        <footer className="bg-black text-white w-full py-12 mt-auto">
+            <div className="container mx-auto px-4">
+                <div className="flex flex-col md:flex-row justify-between items-center md:items-start">
+                    <div className="mb-12 md:mb-0">
+                        <Image
+                            src="/footer-image.png"
+                            alt="Garoto Marte Logo"
+                            width={200}
+                            height={100}
+                            className="mb-6 mx-auto md:mx-0"
+                        />
+                    </div>
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent" />                <div className="container mx-auto absolute inset-0 px-4 pt-12">
-                    <div className="flex flex-col md:flex-row justify-between items-center md:items-start">
-                        <div className="mb-12 md:mb-0">
-                            <Image
-                                src="/footer-image.png"
-                                alt="Garoto Marte Logo"
-                                width={200}
-                                height={100}
-                                className="mb-6 mx-auto md:mx-0"
-                            />
-                        </div>
-
-                        <div className="w-full max-w-md">                            <div className="mb-8">
+                    <div className="w-full max-w-md">
+                        <div className="mb-8">
                             <h3 className="flex items-center font-custom mb-4 text-center md:text-left">
-                                <span className="mr-2">›</span> Newsletter 'Cartas A Quem Sente'
-                            </h3><form onSubmit={handleSubmit} className="flex gap-0">
+                                <span className="mr-1 transition-transform group-hover:translate-x-1">&gt;</span>Newsletter 'Cartas A Quem Sente'
+                            </h3>
+                            <form onSubmit={handleSubmit} className="flex gap-0">
                                 <Input
                                     type="email"
                                     placeholder="E-mail"
@@ -55,21 +55,20 @@ export function Footer() {
                             </form>
                         </div>
 
-                            <div className="flex justify-between items-center">
-                                <Link
-                                    href="mailto:contato@garotomarte.com.br"
-                                    className="text-gray-400 hover:text-white transition-colors"
-                                >
-                                    contato@garotomarte.com.br
+                        <div className="flex justify-between items-center">
+                            <Link
+                                href="mailto:contato@garotomarte.com.br"
+                                className="text-gray-400 hover:text-white transition-colors"
+                            >
+                                contato@garotomarte.com.br
+                            </Link>
+                            <div className="flex space-x-4">
+                                <Link href="https://wa.me/5551982060312" className="hover:opacity-80 transition-opacity" target="_blank" rel="noopener noreferrer">
+                                    <Image src="/whatsapp-icon.svg" alt="WhatsApp" width={32} height={32} className="invert" />
                                 </Link>
-                                <div className="flex space-x-4">
-                                    <Link href="https://wa.me/5551982060312" className="hover:opacity-80 transition-opacity" target="_blank" rel="noopener noreferrer">
-                                        <Image src="/whatsapp-icon.svg" alt="WhatsApp" width={32} height={32} className="invert" />
-                                    </Link>
-                                    <Link href="https://instagram.com/garotomarte" className="hover:opacity-80 transition-opacity" target="_blank" rel="noopener noreferrer">
-                                        <Image src="/instagram-icon.svg" alt="Instagram" width={32} height={32} className="invert" />
-                                    </Link>
-                                </div>
+                                <Link href="https://instagram.com/garotomarte" className="hover:opacity-80 transition-opacity" target="_blank" rel="noopener noreferrer">
+                                    <Image src="/instagram-icon.svg" alt="Instagram" width={32} height={32} className="invert" />
+                                </Link>
                             </div>
                         </div>
                     </div>
