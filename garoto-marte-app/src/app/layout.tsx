@@ -1,10 +1,10 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Fira_Code } from "next/font/google";
 import { Toaster } from "sonner";
 import Script from "next/script";
 
-const inter = Inter({ subsets: ["latin"] });
+const firaCode = Fira_Code({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
     title: "Garoto Marte - Streetwear Exclusiva",
@@ -18,7 +18,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="pt-BR" className="dark">
-            <body className={`${inter.className} bg-black text-white`} suppressHydrationWarning>
+            <body className={`${firaCode.className} bg-black text-white`} suppressHydrationWarning>
                 {children}
                 <Toaster richColors position="top-right" />
                 <Script
