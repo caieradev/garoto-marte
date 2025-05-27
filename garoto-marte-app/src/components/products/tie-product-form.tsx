@@ -541,7 +541,6 @@ export default function TieProductForm({
             </form>
             </Form>        <UnsavedChangesDialog
                 open={showDialog}
-                onConfirm={handleConfirmNavigation}
                 onCancel={handleCancelNavigation}
             />
         </>

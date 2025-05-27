@@ -13,20 +13,31 @@ import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 
 interface EditCollectionPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
 export default function EditCollectionPage({ params }: EditCollectionPageProps) {
-    const { id } = params;
+    const [id, setId] = useState<string | null>(null);
     const [collection, setCollection] = useState<Collection | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
+    // Resolve params Promise
     useEffect(() => {
+        const resolveParams = async () => {
+            const resolvedParams = await params;
+            setId(resolvedParams.id);
+        };
+        resolveParams();
+    }, [params]);
+
+    useEffect(() => {
+        if (!id) return;
+
         const fetchCollection = async () => {
             setIsLoading(true);
             try {
@@ -47,6 +58,8 @@ export default function EditCollectionPage({ params }: EditCollectionPageProps) 
 
         fetchCollection();
     }, [id]); const handleSubmit = async (data: CollectionFormData) => {
+        if (!id) return;
+
         setIsSubmitting(true);
         try {
             await updateCollection(id, data);

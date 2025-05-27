@@ -41,10 +41,10 @@ export default function ImageUploader({
     // Sync publicId when initialPublicId changes
     useEffect(() => {
         setPublicId(initialPublicId || null);
-    }, [initialPublicId]);    const handleUploadClick = async () => {
-        console.log("handleUploadClick called");
-        console.log("window.cloudinary available:", typeof window !== "undefined" && !!window.cloudinary);
-          // Inicializa o widget do Cloudinary
+    }, [initialPublicId]);
+
+    const handleUploadClick = async () => {
+        // Inicializa o widget do Cloudinary
         if (typeof window !== "undefined") {
             if (!window.cloudinary) {
                 console.error("Cloudinary widget not loaded. Make sure the Cloudinary script is included.");

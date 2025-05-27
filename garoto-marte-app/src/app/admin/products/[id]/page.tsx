@@ -14,20 +14,31 @@ import { PageHeader } from "@/components/ui/page-header";
 import { toast } from "sonner";
 
 interface EditProductPageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
 export default function EditProductPage({ params }: EditProductPageProps) {
-    const { id } = params;
+    const [id, setId] = useState<string | null>(null);
     const [product, setProduct] = useState<Product | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
+    // Resolve params Promise
     useEffect(() => {
+        const resolveParams = async () => {
+            const resolvedParams = await params;
+            setId(resolvedParams.id);
+        };
+        resolveParams();
+    }, [params]);
+
+    useEffect(() => {
+        if (!id) return;
+
         const fetchProduct = async () => {
             setIsLoading(true);
             try {
@@ -47,9 +58,9 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         };
 
         fetchProduct();
-    }, [id]);
-
-    const handleRegularProductSubmit = async (data: RegularProductFormData) => {
+    }, [id]);    const handleRegularProductSubmit = async (data: RegularProductFormData) => {
+        if (!id) return;
+        
         setIsSubmitting(true);
         try {
             await updateRegularProduct(id, data);
@@ -62,6 +73,8 @@ export default function EditProductPage({ params }: EditProductPageProps) {
             setIsSubmitting(false);
         }
     }; const handleTieProductSubmit = async (data: TieProductFormData) => {
+        if (!id) return;
+        
         setIsSubmitting(true);
         try {
             await updateTieProduct(id, data);

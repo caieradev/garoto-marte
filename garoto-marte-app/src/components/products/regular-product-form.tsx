@@ -588,7 +588,6 @@ export default function RegularProductForm({
             {/* Unsaved changes confirmation dialog */}
             <UnsavedChangesDialog
                 open={showDialog}
-                onConfirm={handleConfirmNavigation}
                 onCancel={handleCancelNavigation}
             />
         </Fragment>
