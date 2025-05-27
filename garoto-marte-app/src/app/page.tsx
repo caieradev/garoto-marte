@@ -12,13 +12,11 @@ export const metadata: Metadata = {
 export default function HomePage() {
     return (
         <>
-            <Navbar />
             <main className="flex-1">
                 <HeroSection />
                 <FavoritesSection />
                 {/* Aqui podem ser adicionadas outras seções conforme necessário */}
             </main>
-            <Footer />
         </>
     );
 }
