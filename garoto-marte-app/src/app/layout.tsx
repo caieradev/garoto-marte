@@ -19,8 +19,8 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="pt-BR" className="dark">
-            <body className={`${firaCode.className} bg-black text-white`} suppressHydrationWarning>
+        <html lang="pt-BR" className="dark overflow-x-hidden w-full">
+            <body className={`${firaCode.className} bg-black text-white overflow-x-hidden w-full`} suppressHydrationWarning>
                 <Navbar />
                 {children}
                 <Footer />

@@ -75,21 +75,18 @@ export function FavoritesSection() {
         } else if (isRightSwipe) {
             prevSlide();
         }
-    };
-
-    return (
-        <section className="bg-white py-12">
-            <div className="container mx-auto px-4">                <div className="w-full text-center md:text-left md:pl-4 mb-8 flex flex-col md:flex-row md:justify-between md:items-center">
-                    <h2 className="text-black text-5xl font-medium">FAVORITOS</h2>
-                    <Link href="/brado" passHref className="text-black mx-auto md:mx-0 mt-4 md:mt-0 flex items-center justify-center gap-1 group">
-                        Coleção completa
-                        <span className="transition-transform group-hover:translate-x-1">&gt;</span>
-                    </Link>
-                </div>{/* Versão Mobile (Carrossel) */}
-                <div className="relative md:hidden">
-                    <div ref={carouselRef} className="overflow-hidden">
+    }; return (
+        <section className="bg-white py-12 overflow-hidden w-full">
+            <div className="container mx-auto px-4 overflow-hidden"><div className="w-full text-center md:text-left md:pl-4 mb-8 flex flex-col md:flex-row md:justify-between md:items-center">
+                <h2 className="text-black text-5xl font-medium">FAVORITOS</h2>
+                <Link href="/brado" passHref className="text-black mx-auto md:mx-0 mt-4 md:mt-0 flex items-center justify-center gap-1 group">
+                    Coleção completa
+                    <span className="transition-transform group-hover:translate-x-1">&gt;</span>
+                </Link>
+            </div>{/* Versão Mobile (Carrossel) */}                <div className="relative md:hidden">
+                    <div ref={carouselRef} className="overflow-hidden w-full">
                         <div
-                            className="flex transition-transform duration-300 ease-in-out"
+                            className="flex transition-transform duration-300 ease-in-out w-full"
                             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
                             onTouchStart={onTouchStart}
                             onTouchMove={onTouchMove}

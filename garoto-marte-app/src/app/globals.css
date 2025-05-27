@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./fix-overflow.css";
 
 /* Custom Fonts for Garoto Marte */
 @font-face {

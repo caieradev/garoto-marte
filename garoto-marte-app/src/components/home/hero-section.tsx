@@ -80,7 +80,7 @@ export function HeroSection() {
                         />
                     </div>
                     <motion.div
-                        className="absolute top-[40%] right-0 md:top-[0%] md:right-[30%] w-[40%] md:w-[25%] h-auto"
+                        className="absolute top-[48%] right-0 md:top-[0%] md:right-[30%] w-[40%] md:w-[25%] h-auto"
                         style={{ rotate }}
                     >
                         <Image
