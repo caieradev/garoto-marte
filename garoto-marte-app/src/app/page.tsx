@@ -1,3 +1,4 @@
+import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -16,6 +17,7 @@ export default function RootPage({
         <div className="flex flex-col min-h-screen bg-black text-white">
             <Navbar />
             {children}
-        </div>;
+            <Footer />
+        </div>
     </>
 }
