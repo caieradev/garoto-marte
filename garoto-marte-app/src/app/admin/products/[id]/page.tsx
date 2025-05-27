@@ -58,9 +58,9 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         };
 
         fetchProduct();
-    }, [id]);    const handleRegularProductSubmit = async (data: RegularProductFormData) => {
+    }, [id]); const handleRegularProductSubmit = async (data: RegularProductFormData) => {
         if (!id) return;
-        
+
         setIsSubmitting(true);
         try {
             await updateRegularProduct(id, data);
@@ -74,7 +74,7 @@ export default function EditProductPage({ params }: EditProductPageProps) {
         }
     }; const handleTieProductSubmit = async (data: TieProductFormData) => {
         if (!id) return;
-        
+
         setIsSubmitting(true);
         try {
             await updateTieProduct(id, data);

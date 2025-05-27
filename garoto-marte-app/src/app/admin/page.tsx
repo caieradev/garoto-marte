@@ -16,18 +16,18 @@ export default function AdminPage() {
             icon: "shirt",
             link: "/admin/products",
         },
-        {
-            title: "Vendas",
-            description: "Visualize e gerencie pedidos",
-            icon: "shopping-cart",
-            link: "/admin/orders",
-        },
-        {
-            title: "Usuários",
-            description: "Gerencie contas de usuários",
-            icon: "users",
-            link: "/admin/users",
-        }
+        // {
+        //     title: "Vendas",
+        //     description: "Visualize e gerencie pedidos",
+        //     icon: "shopping-cart",
+        //     link: "/admin/orders",
+        // },
+        // {
+        //     title: "Usuários",
+        //     description: "Gerencie contas de usuários",
+        //     icon: "users",
+        //     link: "/admin/users",
+        // }
     ];
 
     return (
