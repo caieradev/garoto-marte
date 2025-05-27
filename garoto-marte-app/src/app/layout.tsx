@@ -18,7 +18,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="pt-BR" className="dark">
-            <body className={inter.className} suppressHydrationWarning>
+            <body className={`${inter.className} bg-black text-white`} suppressHydrationWarning>
                 {children}
                 <Toaster richColors position="top-right" />
                 <Script

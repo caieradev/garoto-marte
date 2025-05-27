@@ -1,13 +1,31 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Custom Fonts for Garoto Marte */
+@font-face {
+  font-family: 'GarotoMarteFont';
+  src: url('/fonts/Fonte-GM.ttf');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'FiraCode';
+  src: url('/fonts/FiraCode-Regular.otf');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'FiraCode', var(--font-geist-sans);
+  --font-mono: 'FiraCode', var(--font-geist-mono);
+  --font-custom: 'GarotoMarteFont', var(--font-geist-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -119,5 +137,10 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  .font-custom {
+    font-family: 'GarotoMarteFont', sans-serif;
+    letter-spacing: 0.05em;
   }
 }
