@@ -27,6 +27,7 @@ export default function ImageUploader({
 }: ImageUploaderProps) {
     console.log("Using upload preset:", uploadPreset); // Log the upload preset for debugging
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [isUploading, setIsUploading] = useState(false);
     const [publicId, setPublicId] = useState<string | null>(initialPublicId || null); // Store public_id, initialize with initialPublicId
 

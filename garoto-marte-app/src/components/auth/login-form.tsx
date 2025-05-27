@@ -22,15 +22,15 @@ export default function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);    try {
+    setLoading(true); try {
       await signIn(email, password);
       router.push('/admin');
     } catch (error) {
       let errorMessage = 'Erro ao fazer login. Tente novamente.';
-      
+
       if (error && typeof error === 'object' && 'code' in error) {
         const firebaseError = error as { code: string };
-        
+
         if (firebaseError.code === 'auth/user-not-found') {
           errorMessage = 'Usuário não encontrado.';
         } else if (firebaseError.code === 'auth/wrong-password') {
@@ -43,7 +43,7 @@ export default function LoginForm() {
           errorMessage = 'Credenciais inválidas.';
         }
       }
-      
+
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -66,7 +66,7 @@ export default function LoginForm() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -79,7 +79,7 @@ export default function LoginForm() {
                 disabled={loading}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
               <div className="relative">
@@ -108,7 +108,7 @@ export default function LoginForm() {
                 </Button>
               </div>
             </div>
-            
+
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>

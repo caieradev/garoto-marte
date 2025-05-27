@@ -18,7 +18,7 @@ export default function NewProductPage() {
 
   useEffect(() => {
     // Define o tipo do produto com base no parâmetro da URL
-    const type = searchParams.get("type");
+    const type = searchParams?.get("type");
     if (type === "regular") {
       setProductType(ProductType.REGULAR);
     } else if (type === "tie") {
