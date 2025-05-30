@@ -147,7 +147,7 @@ function ProductCard({ product }: { product: any }) {
         // TODO: Implementar link para a página do produto
         <Link href={`/products/${product.id}`} passHref>
             <div className="group cursor-pointer text-center">
-                <div className="relative h-64 mb-4 overflow-hidden rounded-md bg-gray-100">
+                <div className="flex items-center justify-center relative h-64 mb-4 overflow-hidden rounded-md bg-gray-100">
                     {product.mainImage ? (
                         <Image
                             src={product.mainImage}

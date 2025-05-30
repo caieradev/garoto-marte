@@ -18,14 +18,16 @@ export function HeroSection() {
     return (
         <section ref={sectionRef} className="relative w-full overflow-hidden">
             {/* Imagem principal de fundo */}
-            <div className="relative w-full md:h-[52vw] min-h-[400px] max-h-lvh">
+            <div className="relative w-full">
                 <Image
                     src="/home/img-1.png"
                     alt="Garoto Marte - Imagem principal"
-                    fill
                     priority
-                    className="object-cover"
+                    width={0}
+                    height={0}
                     sizes="100vw"
+                    className="w-full h-auto"
+                    style={{ width: '100%', height: 'auto' }}
                 />
             </div>
 

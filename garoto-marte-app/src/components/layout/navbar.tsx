@@ -21,7 +21,7 @@ const navigationRight = [
 export function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     return (
-        <header className="bg-[#000000CC] text-white w-full h-[10%] sticky md:fixed top-0 z-40 flex">
+        <header className="bg-[#000000CC] text-white w-full h-[10%] fixed top-0 z-40 flex">
             <nav className="flex items-center justify-between md:px-16 w-full" aria-label="Global">
                 <div className="flex md:hidden">
                     <Link href="/" className="-m-1.5 p-1.5">

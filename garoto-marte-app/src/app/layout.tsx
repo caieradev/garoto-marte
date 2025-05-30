@@ -19,18 +19,19 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="pt-BR" className="dark overflow-x-hidden w-full">            <body className={`${firaCode.className} bg-black text-white overflow-x-hidden w-full min-h-screen flex flex-col`} suppressHydrationWarning>
-            <Navbar />
-            <div className="flex-1 flex flex-col">
-                {children}
-            </div>
-            <Footer />
-            <Toaster richColors position="top-right" />
-            <Script
-                src="https://widget.cloudinary.com/v2.0/global/all.js"
-                strategy="lazyOnload"
-            />
-        </body>
+        <html lang="pt-BR" className="dark overflow-x-hidden w-full">
+            <body className={`${firaCode.className} bg-black text-white overflow-x-hidden w-full min-h-screen flex flex-col`} suppressHydrationWarning>
+                <Navbar />
+                <div className="flex-1 flex flex-col">
+                    {children}
+                </div>
+                <Footer />
+                <Toaster richColors position="top-right" />
+                <Script
+                    src="https://widget.cloudinary.com/v2.0/global/all.js"
+                    strategy="lazyOnload"
+                />
+            </body>
         </html>
     );
 }
