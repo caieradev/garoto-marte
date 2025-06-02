@@ -61,8 +61,7 @@ const regularProductSchema = z.object({
                 secure_url: z.string().url({ message: "URL inválida" }),
                 public_id: z.string().min(1, { message: "O public_id é obrigatório" }),
             })
-        )
-        .min(1, { message: "Adicione pelo menos uma imagem para o produto" }),
+        ),
     measurements: z.object({
         chest: z.number().optional(),
         shoulders: z.number().optional(),
@@ -360,10 +359,8 @@ export default function RegularProductForm({
                                     )}
                                 />
                             </div>
-                        </div>
-
-                        <div className="space-y-6">
-                            <h3 className="text-lg font-medium">Medidas da Peça (cm)</h3>
+                        </div>                        <div className="space-y-6">
+                            <h3 className="text-lg font-medium">Medidas da Peça (cm) - Opcional</h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <FormField
                                     control={form.control}
@@ -532,7 +529,7 @@ export default function RegularProductForm({
                                 name="imageUrls"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Galeria de Imagens</FormLabel>
+                                        <FormLabel>Galeria de Imagens (Opcional)</FormLabel>
                                         <FormControl>
                                             <div className="space-y-4">
                                                 <ImageUploader
