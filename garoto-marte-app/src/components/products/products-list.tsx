@@ -87,9 +87,9 @@ export default function ProductsList({ products, onDelete }: ProductsListProps) 
                                     Nenhum produto encontrado.
                                 </TableCell>
                             </TableRow>
-                        ) : (
-                            products.map((product) => (
-                                <TableRow key={product.id}>                                    <TableCell>
+                        ) : (products.map((product) => (
+                            <TableRow key={product.id}>
+                                <TableCell>
                                     {product.mainImage?.imageUrl && (
                                         <div className="relative h-10 w-10 overflow-hidden rounded-md">
                                             <Image
@@ -101,34 +101,33 @@ export default function ProductsList({ products, onDelete }: ProductsListProps) 
                                         </div>
                                     )}
                                 </TableCell>
-                                    <TableCell className="font-medium">{product.name}</TableCell>
-                                    <TableCell>
-                                        {product.type === ProductType.TIE
-                                            ? `Gravata (${Array.isArray((product as Product & { variants?: unknown[] }).variants) ? (product as Product & { variants?: unknown[] }).variants!.length : 0} opções)`
-                                            : "Peça única"}
-                                    </TableCell>
-                                    <TableCell>{formatCurrency(product.price)}</TableCell>
-                                    <TableCell>{product.collectionName || "—"}</TableCell>
-                                    <TableCell>{getStatusBadge(product)}</TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end space-x-2">
-                                            <Link href={`/admin/products/${product.id}`} passHref>
-                                                <Button variant="outline" size="sm">
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                            </Link>
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleDeleteClick(product)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
+                                <TableCell className="font-medium">{product.name}</TableCell>
+                                <TableCell>
+                                    {product.type === ProductType.TIE
+                                        ? `Gravata (${Array.isArray((product as Product & { variants?: unknown[] }).variants) ? (product as Product & { variants?: unknown[] }).variants!.length : 0} opções)`
+                                        : "Peça única"}
+                                </TableCell>
+                                <TableCell>{formatCurrency(product.price)}</TableCell>
+                                <TableCell>{product.collectionName || "—"}</TableCell>
+                                <TableCell>{getStatusBadge(product)}</TableCell>
+                                <TableCell className="text-right">
+                                    <div className="flex justify-end space-x-2">
+                                        <Link href={`/admin/products/${product.id}`} passHref>
+                                            <Button variant="outline" size="sm">
+                                                <Edit className="h-4 w-4" />
                                             </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
+                                        </Link>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleDeleteClick(product)}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        )))}
                     </TableBody>
                 </Table>
             </div>

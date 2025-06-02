@@ -38,11 +38,12 @@ export default function CollectionsTable() {
             setCollections((prev) => prev.filter((collection) => collection.id !== id));
             toast.success("Coleção excluída com sucesso");
         } catch (err) {
-            console.error("Erro ao excluir coleção:", err);            toast.error("Erro ao excluir coleção. Tente novamente.");
+            console.error("Erro ao excluir coleção:", err);
+            toast.error("Erro ao excluir coleção. Tente novamente.");
             throw err;
         }
     };
-    
+
     if (loading) {
         return (
             <div className="space-y-4">

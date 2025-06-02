@@ -359,7 +359,8 @@ export default function RegularProductForm({
                                     )}
                                 />
                             </div>
-                        </div>                        <div className="space-y-6">
+                        </div>
+                        <div className="space-y-6">
                             <h3 className="text-lg font-medium">Medidas da Peça (cm) - Opcional</h3>
                             <div className="grid grid-cols-2 gap-4">
                                 <FormField
