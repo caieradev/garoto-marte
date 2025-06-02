@@ -29,7 +29,7 @@ const tieVariantsCollection = "tieVariants";
 // Função para converter dados do Firestore para o modelo Product
 import { DocumentData } from "firebase/firestore";
 
-const convertFirestoreDataToProduct = (
+export const convertFirestoreDataToProduct = (
     id: string,
     data: DocumentData
 ): Product => {
