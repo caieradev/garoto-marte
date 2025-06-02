@@ -18,23 +18,23 @@ type ProductCardProps = {
 
 export function ProductCard({ product }: ProductCardProps) {
     const [isHovered, setIsHovered] = useState(false);
-    
+
     // Função para extrair a URL da imagem de maneira segura
     const getImageUrl = (image: string | { imageUrl: string | null } | undefined): string | null => {
         if (!image) return null;
         if (typeof image === 'string') return image !== "" ? image : null;
         return image.imageUrl !== null && image.imageUrl !== "" ? image.imageUrl : null;
     };
-    
+
     // Extrair URLs das imagens
     const mainImageUrl = getImageUrl(product.mainImage);
     const secondaryImageUrl = getImageUrl(product.secondaryImage);
-    
+
     // Determina qual imagem mostrar com base no estado de hover
-    const displayImage = isHovered && secondaryImageUrl 
-        ? secondaryImageUrl 
-        : mainImageUrl 
-            ? mainImageUrl 
+    const displayImage = isHovered && secondaryImageUrl
+        ? secondaryImageUrl
+        : mainImageUrl
+            ? mainImageUrl
             : null;
 
     return (
