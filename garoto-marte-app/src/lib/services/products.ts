@@ -80,7 +80,7 @@ const loadTieVariants = async (productId: string): Promise<TieVariant[]> => {
             where("parentId", "==", productId),
             orderBy("number", "asc")
         );
-        const variantsSnapshot = await getDocs(variantsQuery);        return variantsSnapshot.docs.map((doc) => {
+        const variantsSnapshot = await getDocs(variantsQuery); return variantsSnapshot.docs.map((doc) => {
             const data = doc.data();
             return {
                 id: doc.id,
@@ -198,7 +198,7 @@ export const getTieVariantById = async (id: string): Promise<TieVariant | null> 
 
         if (!variantDoc.exists()) {
             return null;
-        }        const data = variantDoc.data();
+        } const data = variantDoc.data();
         return {
             id: variantDoc.id,
             parentId: data.parentId,
