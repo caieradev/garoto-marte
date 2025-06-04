@@ -55,6 +55,7 @@ export interface RegularProduct extends BaseProduct {
         sleeves?: number;
         waist?: number;
     };
+    tamanho?: string | null;
 }
 
 // Interface para uma gravata individual
@@ -99,6 +100,7 @@ export interface RegularProductFormData {
         sleeves?: number;
         waist?: number;
     };
+    tamanho?: string | null;
 }
 
 // Interface para formulário de gravata

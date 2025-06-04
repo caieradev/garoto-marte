@@ -69,6 +69,7 @@ const regularProductSchema = z.object({
         sleeves: z.number().optional(),
         waist: z.number().optional(),
     }),
+    tamanho: z.string().max(50, { message: "O tamanho não pode ter mais de 50 caracteres" }).nullable().optional(),
 });
 
 interface RegularProductFormProps {
@@ -106,6 +107,7 @@ export default function RegularProductForm({
                     sleeves: undefined,
                     waist: undefined,
                 },
+                tamanho: null,
             };
         }
 
@@ -129,6 +131,7 @@ export default function RegularProductForm({
                 sleeves: undefined,
                 waist: undefined,
             },
+            tamanho: initialData.tamanho ?? null,
         };
     }; const form = useForm<RegularProductFormData, unknown, RegularProductFormData>({
         resolver: zodResolver(regularProductSchema),
@@ -477,7 +480,31 @@ export default function RegularProductForm({
                                         </FormItem>
                                     )}
                                 />
+
+
                             </div>
+
+                            {/* Campo Tamanho */}
+                            <FormField
+                                control={form.control}
+                                name="tamanho"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Tamanho</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="Ex: P, M, G, 38, 40, Único..."
+                                                {...field}
+                                                value={field.value ?? ""}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Opcional: informe o tamanho da peça (ex: P, M, G, 38, 40, Único)
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                         </div>
                     </div>
 

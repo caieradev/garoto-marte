@@ -28,8 +28,8 @@ export default function Page({ params }: PageProps) {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const { id } = await params;
-                const productData = await getProductById(id);
+                const resolvedParams = await params;
+                const productData = await getProductById(resolvedParams.id);
                 setProduct(productData);
 
                 // Se for um produto do tipo gravata, seleciona a primeira variante disponível
@@ -181,6 +181,11 @@ export default function Page({ params }: PageProps) {
                                 ? formatCurrency(selectedVariant.price)
                                 : formatCurrency(product.price)}
                         </p>
+                        {product.type === ProductType.REGULAR && (product as RegularProduct).tamanho && (
+                            <div className="mb-4">
+                                <span className="font-medium">Tamanho:</span> {(product as RegularProduct).tamanho}
+                            </div>
+                        )}
                         <div className="prose prose-invert mb-6">
                             <p>{product.description}</p>
                         </div>
