@@ -61,6 +61,7 @@ export const convertFirestoreDataToProduct = (
             type: ProductType.REGULAR,
             imageUrls: data.imageUrls || [],
             measurements: data.measurements || {},
+            tamanho: data.tamanho ?? null,
         } as RegularProduct;
     } else {
         // Para produtos do tipo gravata, os variants serão carregados separadamente
