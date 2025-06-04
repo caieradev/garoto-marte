@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 const navigationLeft = [
     { name: "SOBRE", href: "/sobre" },
     { name: "BRADO", href: "/brado" },
+    { name: "PRODUTOS", href: "/produtos" },
     { name: "ACERVO", href: "/acervo" },
 ];
 

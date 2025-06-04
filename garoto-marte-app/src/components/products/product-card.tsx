@@ -35,10 +35,8 @@ export function ProductCard({ product }: ProductCardProps) {
         ? secondaryImageUrl
         : mainImageUrl
             ? mainImageUrl
-            : null;
-
-    return (
-        <Link href={`/products/${product.id}`} passHref>
+            : null;    return (
+        <Link href={`/produto/${product.id}`} passHref>
             <div
                 className="group cursor-pointer text-center w-64 mx-auto" // Added mx-auto for horizontal centering
                 onMouseEnter={() => setIsHovered(true)}
