@@ -10,13 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
-interface ProductDetailPageProps {
-    params: {
+interface PageProps {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
-export default function ProductDetailPage({ params }: ProductDetailPageProps) {
+export default function Page({ params }: PageProps) {
     const [product, setProduct] = useState<Product | null>(null);
     const [selectedVariant, setSelectedVariant] = useState<TieVariant | null>(null);
     const [loading, setLoading] = useState(true);
@@ -28,7 +28,8 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const productData = await getProductById(params.id);
+                const { id } = await params;
+                const productData = await getProductById(id);
                 setProduct(productData);
 
                 // Se for um produto do tipo gravata, seleciona a primeira variante disponível
@@ -46,7 +47,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         };
 
         fetchProduct();
-    }, [params.id]);
+    }, [params]);
 
     // Função para mudar a imagem exibida
     const handleImageChange = (index: number) => {
@@ -109,6 +110,15 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     const isRegularProductAvailable = product.type === ProductType.REGULAR && !product.sold;
     const isTieProductAvailable = product.type === ProductType.TIE && selectedVariant && !selectedVariant.sold;
     const isProductAvailable = isRegularProductAvailable || isTieProductAvailable;
+
+    // Dicionário para traduzir as chaves das medidas para português
+    const medidasLabels: Record<string, string> = {
+        chest: "Peito",
+        shoulders: "Ombros",
+        length: "Comprimento",
+        sleeves: "Mangas",
+        waist: "Cintura",
+    };
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -222,11 +232,10 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                                     .filter(([_, value]) => value && value !== 0)
                                     .map(([key, value]) => (
                                         <div key={key} className="flex justify-between border-b border-gray-700 py-1">
-                                            <span className="capitalize">{key}:</span>
+                                            <span className="capitalize">{medidasLabels[key] || key}:</span>
                                             <span>{value} cm</span>
                                         </div>
-                                    ))
-                                }
+                                    ))}
                             </div>
                         </div>
                     )}
