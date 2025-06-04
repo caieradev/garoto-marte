@@ -56,9 +56,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     // Função para selecionar variante de gravata
     const handleVariantSelect = (variant: TieVariant) => {
         setSelectedVariant(variant);
-    };
-
-    // Função para iniciar processo de compra
+    };    // Função para iniciar processo de compra
     const handleBuyClick = async () => {
         alert("Comprar");
     };
@@ -220,15 +218,15 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
                         <div className="space-y-2">
                             <h3 className="text-xl font-medium">Medidas:</h3>
                             <div className="grid grid-cols-2 gap-2">
-                                {Object.entries((product as RegularProduct).measurements || {}).map(
-                                    ([key, value]) =>
-                                        value && value != 0 && (
-                                            <div key={key} className="flex justify-between border-b border-gray-700 py-1">
-                                                <span className="capitalize">{key}:</span>
-                                                <span>{value} cm</span>
-                                            </div>
-                                        )
-                                )}
+                                {Object.entries((product as RegularProduct).measurements || {})
+                                    .filter(([_, value]) => value && value !== 0)
+                                    .map(([key, value]) => (
+                                        <div key={key} className="flex justify-between border-b border-gray-700 py-1">
+                                            <span className="capitalize">{key}:</span>
+                                            <span>{value} cm</span>
+                                        </div>
+                                    ))
+                                }
                             </div>
                         </div>
                     )}
