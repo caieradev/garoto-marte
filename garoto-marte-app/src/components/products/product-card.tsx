@@ -40,17 +40,17 @@ export function ProductCard({ product }: ProductCardProps) {
     return (
         <Link href={`/products/${product.id}`} passHref>
             <div
-                className="group cursor-pointer text-center"
+                className="group cursor-pointer text-center w-64 mx-auto" // Added mx-auto for horizontal centering
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
             >
-                <div className="flex items-center justify-center relative h-64 mb-4 overflow-hidden rounded-md bg-gray-100">
+                <div className="flex items-center justify-center relative h-[325px] mb-4 overflow-hidden rounded-md bg-gray-100">
                     {displayImage ? (
                         <Image
                             src={displayImage}
                             alt={product.name}
-                            width={400}
-                            height={400}
+                            width={256}
+                            height={325}
                             className="object-cover h-full w-full transition-all duration-300 group-hover:scale-105"
                         />
                     ) : (
@@ -64,7 +64,7 @@ export function ProductCard({ product }: ProductCardProps) {
                         </div>
                     )}
                 </div>
-                <p className="font-bold text-2xl text-black">{product.name}</p>
+                <p className="font-thin text-xl text-white h-[46px]">{product.name}</p>
             </div>
         </Link>
     );
