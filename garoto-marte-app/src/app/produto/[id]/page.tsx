@@ -115,7 +115,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Galeria de Imagens */}
                 <div className="space-y-4">
-                    <div className="relative h-[500px] w-full rounded-lg overflow-hidden bg-gray-800">
+                    <div className="bg-white relative h-[500px] w-full rounded-lg overflow-hidden">
                         {currentImage ? (
                             <Image
                                 src={currentImage}
