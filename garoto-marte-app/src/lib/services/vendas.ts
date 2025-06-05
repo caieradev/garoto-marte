@@ -31,6 +31,19 @@ export const criarReserva = async (
             prazo: number,
             empresa: string
         }
+    },
+    dadosCliente?: {
+        nome: string,
+        email: string,
+        telefone: string,
+        endereco?: {
+            logradouro: string,
+            numero: string,
+            complemento?: string,
+            bairro: string,
+            cidade: string,
+            estado: string,
+        }
     }
 ): Promise<string> => {
     try {
@@ -90,6 +103,7 @@ export const criarReserva = async (
         const expiraEm = new Date(agora.getTime() + 15 * 60 * 1000);
 
         // Criar objeto da venda
+        let dadosClienteLimpo = undefined;
         const novaVenda: Omit<Venda, 'id'> = {
             produtoId,
             produtoNome: produto.name,
@@ -103,6 +117,7 @@ export const criarReserva = async (
                 cep: dadosEntrega.cep,
                 frete: dadosEntrega.frete
             } : null,
+            dadosCliente: dadosClienteLimpo ? dadosClienteLimpo : null,
             dataReserva: Timestamp.fromDate(agora),
             expiraEm: Timestamp.fromDate(expiraEm),
             dataCancelamento: null,

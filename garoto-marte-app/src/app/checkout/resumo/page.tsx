@@ -64,7 +64,7 @@ function CheckoutResumoContent() {
     useEffect(() => {
         const produtoId = searchParams?.get("produtoId");
         const varianteId = searchParams?.get("varianteId");
-        const cep = searchParams?.get("cep");
+        const cep = searchParams?.get("freteNome");
         const freteNome = searchParams?.get("freteNome");
         const fretePreco = searchParams?.get("fretePreco");
         const fretePrazo = searchParams?.get("fretePrazo");
@@ -151,7 +151,20 @@ function CheckoutResumoContent() {
                 if (!reservaAtual) {
                     // Criar reserva
                     setShippingData(dadosEntrega);
-                    const novaReservaId = await criarReserva(produtoId, varianteId || undefined, dadosEntrega);
+                    const dadosCliente = {
+                        nome,
+                        email,
+                        telefone,
+                        endereco: {
+                            logradouro: endereco,
+                            numero,
+                            complemento,
+                            bairro,
+                            cidade,
+                            estado,
+                        },
+                    };
+                    const novaReservaId = await criarReserva(produtoId, varianteId || undefined, dadosEntrega, dadosCliente);
                     setReservaId(novaReservaId);
 
                     // Buscar dados da reserva para obter o tempo de expiração
@@ -235,6 +248,32 @@ function CheckoutResumoContent() {
         if (!nome || !email || !telefone || !endereco || !numero || !bairro || !cidade || !estado) {
             toast.error("Preencha todos os campos obrigatórios");
             return;
+        }
+
+        // Sempre atualizar os dados do cliente na reserva antes de prosseguir
+        try {
+            const dadosCliente = {
+                nome,
+                email,
+                telefone,
+                endereco: {
+                    logradouro: endereco,
+                    numero,
+                    complemento,
+                    bairro,
+                    cidade,
+                    estado,
+                },
+            };
+            // Atualiza a reserva no Firestore com os dados do cliente
+            await fetch(`/api/atualizar-dados-cliente-reserva`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reservaId, dadosCliente })
+            });
+        } catch (e) {
+            // Mesmo se falhar, tenta prosseguir para não travar o checkout
+            console.error('Falha ao atualizar dados do cliente na reserva', e);
         }
 
         setProcessando(true);
