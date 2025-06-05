@@ -357,7 +357,12 @@ export function BradoHeroSection() {
                 />
                 <div className="w-full flex flex-col items-center justify-center">
                     <h2 className="text-5xl md:text-left text-center md:mt-0 mt-12">Gravatas no estilo <br />único da Garoto Marte.</h2>
-                    <a href="" className="bg-[#D9D9D9] text-black w-30 rounded-lg flex items-center justify-center text-center mt-10">acesse<br />aqui</a>
+                    <Link
+                        href="/produto/4oksLahWBOQa5jf19gCc"
+                        className="bg-[#D9D9D9] text-black w-30 rounded-lg flex items-center justify-center text-center mt-10"
+                    >
+                        acesse<br />aqui
+                    </Link>
                 </div>
             </div>
 
