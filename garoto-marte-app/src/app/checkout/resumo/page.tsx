@@ -228,14 +228,29 @@ function CheckoutResumoContent() {
 
         setProcessando(true);
         try {
-            // TODO: Aqui seria integrado com API do Mercado Livre para criar o pagamento
-            // Por enquanto, apenas simular a finalização
-            toast.success("Pedido realizado com sucesso! Redirecionando para pagamento...");
-
-            // Redirecionar para Mercado Livre (simulado)
-            setTimeout(() => {
-                router.push("/checkout/sucesso");
-            }, 2000);
+            // Chamar API para criar preferência Mercado Pago
+            const valorProduto = variant ? variant.price : product.price;
+            const valorFrete = shippingData?.frete.preco || 0;
+            const valorTotal = valorProduto + valorFrete;
+            const response = await fetch('/api/mercadopago-create-preference', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    produtoId: product.id,
+                    varianteId: variant?.id,
+                    dadosEntrega: shippingData,
+                    compradorEmail: email,
+                    externalReference: reservaId,
+                    valorTotal,
+                    produtoNome: product.name,
+                    produtoDescricao: product.description,
+                })
+            });
+            if (!response.ok) throw new Error('Erro ao criar pagamento Mercado Pago');
+            const data = await response.json();
+            if (!data.init_point) throw new Error('URL de pagamento não recebida');
+            // Redirecionar para o checkout do Mercado Pago
+            window.location.href = data.init_point;
         } catch (error) {
             console.error("Erro ao processar pagamento:", error);
             toast.error("Erro ao processar pagamento. Tente novamente.");
