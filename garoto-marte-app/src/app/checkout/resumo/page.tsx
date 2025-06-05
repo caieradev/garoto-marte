@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -33,7 +33,7 @@ import {
 } from "@/lib/services/vendas";
 import { toast } from "sonner";
 
-export default function CheckoutResumoPage() {
+function CheckoutResumoContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -568,5 +568,13 @@ export default function CheckoutResumoPage() {
                 </AlertDialog>
             </div>
         </div>
+    );
+}
+
+export default function CheckoutResumoPage() {
+    return (
+        <Suspense fallback={<div className="container mx-auto px-4 py-8"><Skeleton className="h-40 w-full mb-4" /><Skeleton className="h-60 w-full mb-4" /><Skeleton className="h-20 w-full" /></div>}>
+            <CheckoutResumoContent />
+        </Suspense>
     );
 }

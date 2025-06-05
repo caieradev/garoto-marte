@@ -8,7 +8,7 @@ export default function CheckoutSuccessPage() {
     return (
         <div className="container mx-auto px-4 py-16">
             <div className="max-w-md mx-auto text-center">
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center mb-6 mt-20">
                     <CheckCircle2 className="h-20 w-20 text-green-500" />
                 </div>
 
