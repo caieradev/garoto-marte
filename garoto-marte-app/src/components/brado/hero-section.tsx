@@ -498,7 +498,11 @@ export function BradoHeroSection() {
                     className="w-full h-auto"
                     style={{ width: '100%', height: 'auto' }}
                 />
-                <h2 className="absolute bottom-0 left-0 text-left mt-10 text-sm md:text-2xl w-140" style={{ marginLeft: 0 }}>
+                {/* Desktop: texto absoluto sobre a imagem; Mobile: texto abaixo da imagem */}
+                <h2 className="hidden md:block absolute bottom-0 left-0 text-left mt-10 text-sm md:text-2xl w-140" style={{ marginLeft: 0 }}>
+                    Por fim, a coleção prioriza reutilizar tecidos/retalhos e processos conscientes (peças de brechó), reforçando a responsabilidade com o planeta, que também é uma forma de BRADO.
+                </h2>
+                <h2 className="block md:hidden mt-4 text-sm w-full text-left px-4">
                     Por fim, a coleção prioriza reutilizar tecidos/retalhos e processos conscientes (peças de brechó), reforçando a responsabilidade com o planeta, que também é uma forma de BRADO.
                 </h2>
             </div>
