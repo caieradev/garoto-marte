@@ -474,7 +474,7 @@ export function BradoHeroSection() {
                     />
                 </div>
             </div>
-            <h2 className="text-center mt-10 text-2xl mx-22 mb-12">
+            <h2 className="text-center mt-10 text-lg md:text-2xl mx-22 mb-12">
                 Destacamos os elementos que remetem a símbolos de resistência e pertencimento, como padrões geométricos e técnicas artesanais. Esses detalhes criam um elo entre passado e presente.</h2>
 
             <div className="flex flex-col md:flex-row w-full items-center justify-center">
