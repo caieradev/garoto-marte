@@ -60,13 +60,11 @@ function CheckoutResumoContent() {
     const [estado, setEstado] = useState("");
 
     // Processar pagamento
-    const [processando, setProcessando] = useState(false);
-
-    // Buscar dados do produto e criar reserva
+    const [processando, setProcessando] = useState(false);    // Buscar dados do produto e criar reserva
     useEffect(() => {
         const produtoId = searchParams?.get("produtoId");
         const varianteId = searchParams?.get("varianteId");
-        const cep = searchParams?.get("freteNome");
+        const cep = searchParams?.get("cep");
         const freteNome = searchParams?.get("freteNome");
         const fretePreco = searchParams?.get("fretePreco");
         const fretePrazo = searchParams?.get("fretePrazo");
