@@ -16,6 +16,9 @@ export interface DadosEntrega {
         preco: number;
         prazo: number;
         empresa: string;
+        // NOVO: campos opcionais para integração Melhor Envio
+        id?: string;
+        empresaId?: string;
     };
 }
 
@@ -24,6 +27,7 @@ export interface DadosCliente {
     nome: string;
     email: string;
     telefone: string;
+    documento?: string; // CPF do cliente
     endereco?: {
         logradouro: string;
         numero: string;

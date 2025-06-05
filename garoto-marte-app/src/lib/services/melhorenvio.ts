@@ -85,13 +85,16 @@ export async function gerarPedidoEnvio(venda: any): Promise<DadosEnvioRetorno | 
             throw new Error('Informações incompletas para gerar pedido de envio');
         }
 
-        console.log('[MELHOR ENVIO] Montando dados do comprador e remetente');
+        console.log(venda);
 
         // Montar os dados do destinatário (comprador)
+        const documentoComprador = (venda.cliente.documento || venda.cliente.cpf || venda.dadosCliente?.documento || venda.dadosCliente?.cpf || '').toString();
+        console.log('[MELHOR ENVIO] Documento do comprador enviado:', documentoComprador);
         const comprador = {
             name: venda.cliente.nome || 'Cliente',
             email: venda.cliente.email || 'comprador@exemplo.com',
             phone: venda.cliente.telefone || '00000000000',
+            document: documentoComprador, // CPF do cliente
             address: venda.endereco.logradouro || 'Rua não informada',
             number: venda.endereco.numero || '0',
             complement: venda.endereco.complemento || '',
@@ -107,7 +110,7 @@ export async function gerarPedidoEnvio(venda: any): Promise<DadosEnvioRetorno | 
             name: 'Garoto Marte',
             phone: '5182060312',
             email: 'contatogarotomarte@gmail.com',
-            document: '56334712000100',
+            company_document: '56334712000100',
             address: 'Av Ninopolis',
             number: '210',
             complement: '210',
@@ -118,49 +121,16 @@ export async function gerarPedidoEnvio(venda: any): Promise<DadosEnvioRetorno | 
             country_id: 'BR',
         };
 
-        // PASSO 1: Cotação de frete
-        console.log('[MELHOR ENVIO] PASSO 1: Cotação de frete');
-        const calculateBody = {
-            from: { postal_code: remetente.postal_code },
-            to: { postal_code: comprador.postal_code },
-            products: [
-                {
-                    weight: 1,
-                    width: 22,
-                    height: 12,
-                    length: 33,
-                    insurance_value: venda.valorTotal,
-                },
-            ],
-            services: [String(venda.opcaoEnvio?.codigo || 1)],
-            options: {
-                receipt: false,
-                own_hand: false,
-                collect: false,
-            },
-        };
-
-        const quoteResponse = await axios.post<MelhorEnvioQuote[]>(`${API_URL}/me/shipment/calculate`, calculateBody, {
-            headers: {
-                'Authorization': `Bearer ${TOKEN}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
-        });
-
-        console.log('[MELHOR ENVIO] Resultado da cotação:', JSON.stringify(quoteResponse.data));
-
-        if (!quoteResponse.data || !Array.isArray(quoteResponse.data) || quoteResponse.data.length === 0) {
-            throw new Error('Nenhuma cotação de envio disponível para este endereço');
+        // NOVO: Usar dados de envio já salvos na venda, sem cotação
+        const shipping = venda.opcaoEnvio;
+        if (!shipping) {
+            throw new Error('Dados de envio não encontrados na venda.');
         }
 
-        const selectedQuote = quoteResponse.data[0];
-
-        // PASSO 2: Criar o pedido no carrinho
-        console.log('[MELHOR ENVIO] PASSO 2: Adicionando ao carrinho');
+        // Montar dados do carrinho usando os dados salvos
         const cartData = {
-            service: selectedQuote.id,
-            agency: 49, // Agência dos Correios (se necessário)
+            service: shipping.id,
+            agency: shipping.empresaId,
             from: remetente,
             to: comprador,
             products: venda.itens.map((item: any) => ({
@@ -170,10 +140,10 @@ export async function gerarPedidoEnvio(venda: any): Promise<DadosEnvioRetorno | 
             })),
             volumes: [
                 {
-                    height: 10,
-                    width: 15,
-                    length: 20,
-                    weight: venda.pesoTotal || 0.5,
+                    height: 12,
+                    width: 22,
+                    length: 33,
+                    weight: 1,
                 },
             ],
             options: {
@@ -184,6 +154,8 @@ export async function gerarPedidoEnvio(venda: any): Promise<DadosEnvioRetorno | 
                 non_commercial: true,
             },
         };
+
+        console.log('[MELHOR ENVIO] Dados do carrinho:', JSON.stringify(cartData));
 
         const cartResponse = await axios.post<MelhorEnvioCartResponse>(`${API_URL}/me/cart`, cartData, {
             headers: {
@@ -204,12 +176,12 @@ export async function gerarPedidoEnvio(venda: any): Promise<DadosEnvioRetorno | 
             pedidoEnvioId: cartResponse.data.id,
             detalhes: {
                 cart: cartResponse.data,
-                quote: selectedQuote,
+                quote: shipping, // salva a cotação/serviço selecionado
                 urlRastreio: cartResponse.data.tracking || null,
-                preco: selectedQuote.price,
-                prazoEntrega: selectedQuote.delivery_time,
-                nomeServico: selectedQuote.name,
-                empresa: selectedQuote.company.name,
+                preco: shipping.preco,
+                prazoEntrega: shipping.prazo,
+                nomeServico: shipping.nome,
+                empresa: shipping.empresa,
                 urlEtiqueta: null // Será preenchido após o pagamento
             },
         };
@@ -240,7 +212,6 @@ export async function atualizarPedidoComDadosEnvio(vendaId: string, dadosEnvio: 
         await updateDoc(docRef, {
             dadosEnvio: {
                 pedidoEnvioId: dadosEnvio.pedidoEnvioId,
-                detalhes: dadosEnvio.detalhes,
                 dataCriacao: serverTimestamp(),
                 status: 'aguardando_pagamento'
             }

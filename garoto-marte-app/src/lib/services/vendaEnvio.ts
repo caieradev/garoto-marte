@@ -67,6 +67,7 @@ export async function obterDadosVendaParaEnvio(vendaId: string) {
                 nome: dadosCliente.nome || 'Cliente',
                 email: dadosCliente.email || '',
                 telefone: dadosCliente.telefone || '',
+                documento: dadosCliente.documento || '', // CPF do cliente
             },
             endereco: {
                 logradouro: endereco.logradouro || '',
@@ -86,10 +87,12 @@ export async function obterDadosVendaParaEnvio(vendaId: string) {
                 precoUnitario: venda.valorProduto || 0
             }],
             opcaoEnvio: {
+                id: frete.id,
+                empresaId: frete.empresaId,
                 codigo: codigoServico,
-                nome: frete.nome || 'PAC'
+                nome: frete.nome,
             },
-            pesoTotal: produto && 'weight' in produto ? produto.weight : 0.5 // Peso em kg, usando dados do produto ou valor padrão
+            pesoTotal: 1 // Peso em kg, usando dados do produto ou valor padrão
         };
 
         return vendaComDados;

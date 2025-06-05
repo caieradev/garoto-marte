@@ -14,7 +14,7 @@ import {
     deleteDoc
 } from "firebase/firestore";
 import { Product, ProductType, TieVariant } from "../types";
-import { Venda, VendaStatus } from "../types/venda";
+import { Venda, VendaStatus, DadosEntrega, DadosCliente } from "../types/venda";
 import { getProductById, markProductAsSold, markTieVariantAsSold } from "./products";
 
 const VENDAS_COLLECTION = "vendas";
@@ -23,28 +23,8 @@ const VENDAS_COLLECTION = "vendas";
 export const criarReserva = async (
     produtoId: string,
     varianteId?: string,
-    dadosEntrega?: {
-        cep: string,
-        frete: {
-            nome: string,
-            preco: number,
-            prazo: number,
-            empresa: string
-        }
-    },
-    dadosCliente?: {
-        nome: string,
-        email: string,
-        telefone: string,
-        endereco?: {
-            logradouro: string,
-            numero: string,
-            complemento?: string,
-            bairro: string,
-            cidade: string,
-            estado: string,
-        }
-    }
+    dadosEntrega?: DadosEntrega,
+    dadosCliente?: DadosCliente
 ): Promise<string> => {
     try {
         // Buscar diretamente se já existe uma reserva ativa para este produto/variante

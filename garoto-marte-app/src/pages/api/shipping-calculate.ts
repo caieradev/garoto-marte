@@ -40,17 +40,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             },
         });
 
+        console.log('Resposta do Melhor Envio:', response.data);
+
         // Filtrar apenas Correios e Jadlog
         const allowedCompanies = ['Correios', 'Jadlog'];
         const options = Array.isArray(response.data)
             ? response.data
                 .filter((opt: any) => allowedCompanies.includes(opt.company?.name))
                 .map((opt: any) => ({
+                    id: opt.id ?? 0,
                     name: opt.name,
                     price: opt.price,
                     delivery_time: opt.delivery_time,
                     error: opt.error || null,
                     company: {
+                        id: opt.company?.id ?? 0,
                         name: opt.company?.name,
                         picture: opt.company?.picture,
                     },

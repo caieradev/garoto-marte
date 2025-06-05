@@ -46,12 +46,11 @@ function CheckoutResumoContent() {
     const [reservaId, setReservaId] = useState<string | null>(null);
     const [expirationTime, setExpirationTime] = useState<Date | null>(null);
     const [shippingData, setShippingData] = useState<DadosEntrega | null>(null);
-    const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
-
-    // Dados de formulário para checkout
+    const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);    // Dados de formulário para checkout
     const [nome, setNome] = useState("");
     const [email, setEmail] = useState("");
     const [telefone, setTelefone] = useState("");
+    const [documento, setDocumento] = useState(""); // CPF do cliente
     const [endereco, setEndereco] = useState("");
     const [numero, setNumero] = useState("");
     const [complemento, setComplemento] = useState("");
@@ -59,7 +58,7 @@ function CheckoutResumoContent() {
     const [cidade, setCidade] = useState("");
     const [estado, setEstado] = useState("");
 
-    // Processar pagamento
+    // Processar pagamento http://localhost:3000/checkout/resumo?produtoId=5UvcMfSCGtd5y5Lz5eoW&freteNome=SEDEX&fretePreco=17.40&fretePrazo=9&freteEmpresa=Correios&freteId=2&freteEmpresaId=1
     const [processando, setProcessando] = useState(false);    // Buscar dados do produto e criar reserva
     useEffect(() => {
         const produtoId = searchParams?.get("produtoId");
@@ -84,7 +83,9 @@ function CheckoutResumoContent() {
                 nome: freteNome,
                 preco: Number(fretePreco),
                 prazo: Number(fretePrazo),
-                empresa: freteEmpresa
+                empresa: freteEmpresa,
+                id: searchParams?.get("freteId") || undefined,
+                empresaId: searchParams?.get("freteEmpresaId") || undefined,
             }
         };        // Função para carregar dados e criar reserva
         const iniciarCheckout = async () => {
@@ -245,8 +246,34 @@ function CheckoutResumoContent() {
         if (!reservaId || !product) return;
 
         // Validação de formulário (básica)
-        if (!nome || !email || !telefone || !endereco || !numero || !bairro || !cidade || !estado) {
+        if (!nome || !email || !telefone || !documento || !endereco || !numero || !bairro || !cidade || !estado) {
             toast.error("Preencha todos os campos obrigatórios");
+            return;
+        }
+
+        // Validação de CPF
+        const cpfLimpo = documento.replace(/\D/g, '');
+        if (cpfLimpo.length !== 11) {
+            toast.error("CPF inválido. Digite os 11 dígitos.");
+            return;
+        }
+        // Validação de formato de CPF (opcional, pode ser aprimorado com algoritmo de CPF)
+        if (!/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(documento) && cpfLimpo.length === 11) {
+            toast.error("Digite o CPF no formato 000.000.000-00");
+            return;
+        }
+
+        // Validação de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            toast.error("Email inválido");
+            return;
+        }
+
+        // Validação de telefone
+        const telefoneLimpo = telefone.replace(/\D/g, '');
+        if (telefoneLimpo.length < 10) {
+            toast.error("Telefone inválido. Digite DDD + número");
             return;
         }
 
@@ -255,7 +282,8 @@ function CheckoutResumoContent() {
             const dadosCliente = {
                 nome,
                 email,
-                telefone,
+                telefone: telefone.replace(/\D/g, ''), // Envia apenas números
+                documento: documento.replace(/\D/g, ''), // Envia apenas números
                 endereco: {
                     logradouro: endereco,
                     numero,
@@ -484,17 +512,30 @@ function CheckoutResumoContent() {
                                 placeholder="seu@email.com"
                                 required
                             />
-                        </div>
-
-                        <div className="space-y-2">
+                        </div>                        <div className="space-y-2">
                             <Label htmlFor="telefone">Telefone *</Label>
                             <Input
                                 id="telefone"
                                 value={telefone}
-                                onChange={(e) => setTelefone(e.target.value)}
+                                onChange={(e) => setTelefone(e.target.value.replace(/\D/g, '').replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2').slice(0, 15))}
                                 placeholder="(99) 99999-9999"
                                 required
                             />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="documento">CPF *</Label>
+                            <Input
+                                id="documento"
+                                value={documento}
+                                onChange={(e) => setDocumento(e.target.value.replace(/\D/g, '').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})/, '$1-$2').slice(0, 14))}
+                                placeholder="000.000.000-00"
+                                maxLength={14}
+                                required
+                            />
+                            <p className="text-xs text-gray-400 mt-1">
+                                Necessário para emissão da etiqueta de envio
+                            </p>
                         </div>
 
                         <div className="space-y-2">

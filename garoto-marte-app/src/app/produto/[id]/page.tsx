@@ -111,13 +111,17 @@ export default function Page({ params }: PageProps) {
             if (product.type === ProductType.TIE && selectedVariant?.id) {
                 params.append("varianteId", selectedVariant.id);
             }
+            console.log(selectedShipping);
 
-            // Adicionar dados do frete
-            params.append("cep", cep.replace(/\D/g, ""));
+            // Adicionar dados do frete (todos os atributos necessários)
             params.append("freteNome", selectedShipping.name);
             params.append("fretePreco", selectedShipping.price.toString());
             params.append("fretePrazo", selectedShipping.delivery_time.toString());
             params.append("freteEmpresa", selectedShipping.company.name);
+            // Adicionais: se vierem do backend, tente passar como string vazia caso não existam
+            params.append("freteId", selectedShipping.id.toString());
+            params.append("freteEmpresaId", selectedShipping.company.id.toString());
+            params.append("cep", cep.replace(/\D/g, "")); // Adicionar CEP sem formatação
 
             // Navegar para checkout
             setProcessing(true);
