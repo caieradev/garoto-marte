@@ -96,6 +96,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).end();
   }
 
+  if (req.method === 'GET') {
+    return res.status(200).end();
+  }
+
   if (req.method === 'POST' || req.method?.toLowerCase() === 'post') {
 
     console.log('--- [WEBHOOK] Mercado Pago - Nova requisição recebida ---');
