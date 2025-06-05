@@ -20,7 +20,7 @@ async function getPayment(paymentId: string) {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Autenticação do webhook via header
-  const secret = req.headers['x-webhook-secret'] || req.headers['x-webhook-secret-key'];
+  const secret = req.headers['x-webhook-secret'] || req.headers['x-webhook-secret-key'] || req.headers['x-signature'];
   if (!secret || secret !== process.env.MERCADO_PAGO_WEBHOOK_SECRET_KEY) {
     return res.status(401).json({ message: 'Unauthorized: invalid webhook secret' });
   }
