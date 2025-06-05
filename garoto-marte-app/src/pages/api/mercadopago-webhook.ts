@@ -87,6 +87,10 @@ async function getPayment(paymentId: string) {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Método não permitido' });
+  }
+
   // Identify webhook type based on user-agent or other headers
   const userAgent = req.headers['user-agent'] as string;
   const isV2Webhook = userAgent?.includes('Feed v2.0');
@@ -94,14 +98,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // v2.0 webhooks may use different signature format
   if (!isV2Webhook) {
     if (!validateWebhookSignature(req)) {
-
       return res.status(401).json({ message: 'Unauthorized: invalid webhook signature' });
     }
-
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Método não permitido' });
   }
 
   try {
