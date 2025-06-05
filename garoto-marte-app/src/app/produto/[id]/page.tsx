@@ -8,6 +8,7 @@ import { Product, ProductType, TieProduct, RegularProduct, TieVariant } from "@/
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 interface PageProps {
@@ -22,6 +23,11 @@ export default function Page({ params }: PageProps) {
     const [loading, setLoading] = useState(true);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [processing, setProcessing] = useState(false);
+    const [cep, setCep] = useState("");
+    const [cepError, setCepError] = useState("");
+    const [shippingLoading, setShippingLoading] = useState(false);
+    const [shippingOptions, setShippingOptions] = useState<any[]>([]);
+    const [shippingError, setShippingError] = useState("");
     const router = useRouter();
 
     // Carregar dados do produto
@@ -60,6 +66,49 @@ export default function Page({ params }: PageProps) {
     };    // Função para iniciar processo de compra
     const handleBuyClick = async () => {
         alert("Comprar");
+    };
+
+    // Validação e formatação de CEP
+    const isValidCEP = (cep: string) => /^\d{5}-?\d{3}$/.test(cep);
+    const formatCEP = (cep: string) => {
+        const numericCEP = cep.replace(/\D/g, "");
+        return numericCEP.length === 8 ? `${numericCEP.slice(0, 5)}-${numericCEP.slice(5)}` : numericCEP;
+    };
+
+    const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.replace(/\D/g, "");
+        setCep(formatCEP(value));
+        setCepError("");
+    };
+
+    const handleShippingCalc = async () => {
+        setShippingError("");
+        if (!isValidCEP(cep)) {
+            setCepError("CEP inválido. Use o formato 00000-000");
+            setShippingOptions([]);
+            return;
+        }
+        setShippingLoading(true);
+        setShippingOptions([]);
+        try {
+            const price = product?.type === ProductType.TIE && selectedVariant ? selectedVariant.price : product?.price;
+            const res = await fetch("/api/shipping-calculate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ cep: cep.replace(/\D/g, ""), price }),
+            });
+            const data = await res.json();
+            if (!res.ok || !Array.isArray(data)) {
+                setShippingError(data.error || "Erro ao calcular frete");
+                setShippingOptions([]);
+            } else {
+                setShippingOptions(data);
+            }
+        } catch (err) {
+            setShippingError("Erro ao consultar frete. Tente novamente.");
+        } finally {
+            setShippingLoading(false);
+        }
     };
 
     // Renderização condicional baseada no estado de carregamento
@@ -244,6 +293,52 @@ export default function Page({ params }: PageProps) {
                             </div>
                         </div>
                     )}
+
+                    {/* Cálculo de Frete */}
+                    <div className="space-y-2">
+                        <label htmlFor="cep" className="font-medium">Calcule o frete:</label>
+                        <div className="flex gap-2 items-center">
+                            <Input
+                                id="cep"
+                                placeholder="Digite seu CEP"
+                                value={cep}
+                                onChange={handleCepChange}
+                                maxLength={9}
+                                className={cepError ? "border-red-500" : ""}
+                                inputMode="numeric"
+                                autoComplete="postal-code"
+                            />
+                            <Button type="button" variant="secondary" onClick={handleShippingCalc} disabled={shippingLoading || !cep}>
+                                {shippingLoading ? "Calculando..." : "Calcular"}
+                            </Button>
+                        </div>
+                        <a
+                            href="https://buscacepinter.correios.com.br/app/endereco/index.php"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-muted-foreground underline hover:text-primary"
+                        >
+                            Não sei meu CEP
+                        </a>
+                        {cepError && <div className="text-red-500 text-xs mt-1">{cepError}</div>}
+                        {shippingError && <div className="text-red-500 text-xs mt-1">{shippingError}</div>}
+                        {shippingOptions.length > 0 && (
+                            <div className="mt-2 space-y-1">
+                                <div className="font-medium text-sm mb-1">Opções de frete:</div>
+                                {shippingOptions.filter(opt => !opt.error).map((opt, idx) => (
+                                    <div key={idx} className="flex items-center justify-between border-b border-gray-700 py-1 text-sm gap-2">
+                                        <div className="flex items-center gap-2">
+                                            {opt.company?.picture && (
+                                                <Image src={opt.company.picture} alt={opt.company.name} width={28} height={28} className="rounded bg-white border" />
+                                            )}
+                                            <span>{opt.company?.name || ""} {opt.name && opt.name !== ".Package" && opt.name !== ".Com" ? `- ${opt.name}` : ""}</span>
+                                        </div>
+                                        <span>{opt.price ? formatCurrency(Number(opt.price)) : "-"} ({opt.delivery_time} dias)</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
                     {/* Botões de Ação */}
                     <div className="space-y-4 pt-4">
