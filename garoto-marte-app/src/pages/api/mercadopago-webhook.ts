@@ -171,24 +171,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Status possíveis: approved, in_process, pending, rejected, cancelled, refunded
     switch (payment.status) {
       case 'approved':
-        await finalizarVenda(reserva.id);
-        // MELHOR ENVIO LOGS INÍCIO
+        await finalizarVenda(reserva.id);        // MELHOR ENVIO INTEGRAÇÃO
         console.log('[MELHOR ENVIO] Iniciando geração de pedido de envio para reserva:', reserva.id);
         try {
+          // 1. Obter todos os dados necessários da venda para o envio
           const dadosVenda = await obterDadosVendaParaEnvio(reserva.id);
           console.log('[MELHOR ENVIO] Dados da venda para envio:', JSON.stringify(dadosVenda));
-          const resultadoEnvio = await gerarPedidoEnvio(dadosVenda);
-          console.log('[MELHOR ENVIO] Resultado da geração do pedido:', JSON.stringify(resultadoEnvio));
-          if (resultadoEnvio.success) {
-            await atualizarPedidoComDadosEnvio(reserva.id, resultadoEnvio);
-            console.log('[MELHOR ENVIO] Pedido de envio atualizado na venda:', reserva.id);
+          // 2. Verificar se temos dados suficientes para criar o envio
+          if (!dadosVenda.cliente || !dadosVenda.endereco || !dadosVenda.endereco.cep) {
+            console.error('[MELHOR ENVIO] Dados insuficientes para criar envio. Dados do cliente ou endereço incompletos.');
+            // Continuar mesmo sem dados completos - o envio poderá ser feito manualmente depois
           } else {
-            console.error('[MELHOR ENVIO] Erro ao gerar pedido:', resultadoEnvio.error, resultadoEnvio.details);
+            // 3. Gerar o pedido de envio no Melhor Envio usando a API atualizada
+            const resultadoEnvio = await gerarPedidoEnvio(dadosVenda);
+            console.log('[MELHOR ENVIO] Resultado da geração do pedido:', JSON.stringify(resultadoEnvio));
+
+            // 4. Atualizar a venda com os dados do envio gerado
+            if (resultadoEnvio.success) {
+              await atualizarPedidoComDadosEnvio(reserva.id, resultadoEnvio);
+              console.log('[MELHOR ENVIO] Pedido de envio atualizado na venda:', reserva.id);
+            } else {
+              console.error('[MELHOR ENVIO] Erro ao gerar pedido:', resultadoEnvio.error, resultadoEnvio.details);
+            }
           }
         } catch (envioError) {
           console.error('[MELHOR ENVIO] Exceção ao processar pedido de envio:', envioError);
         }
-        // MELHOR ENVIO LOGS FIM
+        // FIM MELHOR ENVIO INTEGRAÇÃO
         break;
       case 'in_process':
       case 'pending':

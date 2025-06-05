@@ -20,40 +20,76 @@ export async function obterDadosVendaParaEnvio(vendaId: string) {
 
         const venda = docSnap.data() as Venda;
         venda.id = docSnap.id;
+        console.log('Dados da venda obtidos:', venda);
 
         // Buscar produto para ter acesso a detalhes adicionais (se necessário)
         const produto = await getProductById(venda.produtoId);
 
+        // Dados do cliente com valores padrão para evitar erros de tipo
+        const dadosCliente = venda.dadosCliente || { nome: '', email: '', telefone: '' };
+
+        // Dados de endereço com valores padrão
+        const endereco = venda.dadosCliente?.endereco || {
+            logradouro: '',
+            numero: '',
+            bairro: '',
+            cidade: '',
+            estado: ''
+        };
+
+        // Dados de entrega com valores padrão
+        const dadosEntrega = venda.dadosEntrega || { cep: '' };
+
+        // Dados de frete com valores padrão
+        const frete = venda.dadosEntrega?.frete || {
+            nome: 'PAC',
+            empresa: 'CORREIOS',
+            preco: 0,
+            prazo: 0
+        };
+
+        // Determinar código de serviço do Melhor Envio
+        // Códigos padrão: 1 = PAC, 2 = SEDEX
+        const codigoServico = frete.empresa === 'CORREIOS'
+            ? (frete.nome.includes('SEDEX') ? 2 : 1)
+            : 1;
+
         // Estruturar os dados para o Melhor Envio
         const vendaComDados = {
-            ...venda,
+            id: venda.id,
+            produtoId: venda.produtoId,
+            produtoNome: venda.produtoNome || '',
+            status: venda.status,
+            valorProduto: venda.valorProduto || 0,
+            valorFrete: venda.valorFrete || 0,
+            valorTotal: venda.valorTotal || 0,
             cliente: {
-                nome: venda.dadosCliente?.nome || 'Cliente',
-                email: venda.dadosCliente?.email || '',
-                telefone: venda.dadosCliente?.telefone || '',
+                nome: dadosCliente.nome || 'Cliente',
+                email: dadosCliente.email || '',
+                telefone: dadosCliente.telefone || '',
             },
             endereco: {
-                logradouro: venda.dadosCliente?.endereco?.logradouro || '',
-                numero: venda.dadosCliente?.endereco?.numero || '',
-                complemento: venda.dadosCliente?.endereco?.complemento || '',
-                bairro: venda.dadosCliente?.endereco?.bairro || '',
-                cidade: venda.dadosCliente?.endereco?.cidade || '',
-                estado: venda.dadosCliente?.endereco?.estado || '',
-                cep: venda.dadosEntrega?.cep || ''
+                logradouro: endereco.logradouro || '',
+                numero: endereco.numero || '',
+                complemento: endereco.complemento || '',
+                bairro: endereco.bairro || '',
+                cidade: endereco.cidade || '',
+                estado: endereco.estado || '',
+                cep: dadosEntrega.cep || ''
             },
             itens: [{
                 produto: {
-                    nome: venda.produtoNome,
+                    nome: venda.produtoNome || (produto ? produto.name : 'Produto'),
                     id: venda.produtoId
                 },
                 quantidade: 1,
-                precoUnitario: venda.valorProduto
+                precoUnitario: venda.valorProduto || 0
             }],
             opcaoEnvio: {
-                codigo: venda.dadosEntrega?.frete?.empresa === 'CORREIOS' ? 1 : 2, // 1 para PAC, 2 para SEDEX
-                nome: venda.dadosEntrega?.frete?.nome || 'PAC'
+                codigo: codigoServico,
+                nome: frete.nome || 'PAC'
             },
-            pesoTotal: 1 // Peso em kg
+            pesoTotal: produto && 'weight' in produto ? produto.weight : 0.5 // Peso em kg, usando dados do produto ou valor padrão
         };
 
         return vendaComDados;
