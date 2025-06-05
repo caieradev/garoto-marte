@@ -34,6 +34,26 @@ export const criarReserva = async (
     }
 ): Promise<string> => {
     try {
+        // Buscar diretamente se já existe uma reserva ativa para este produto/variante
+        // em vez de chamar verificarReservaAtiva (que poderia causar recursão)
+        const vendaQuery = varianteId
+            ? query(
+                collection(db, VENDAS_COLLECTION),
+                where("varianteId", "==", varianteId),
+                where("status", "==", VendaStatus.RESERVADO)
+            )
+            : query(
+                collection(db, VENDAS_COLLECTION),
+                where("produtoId", "==", produtoId),
+                where("varianteId", "==", null),
+                where("status", "==", VendaStatus.RESERVADO)
+            );
+
+        const snapshot = await getDocs(vendaQuery);
+        if (!snapshot.empty) {
+            return snapshot.docs[0].id; // Retorna o ID da reserva existente
+        }
+
         // Buscar produto para obter os dados
         const produto = await getProductById(produtoId);
         if (!produto) {
@@ -103,9 +123,6 @@ export const criarReserva = async (
 // Verificar se existe reserva ativa para um produto
 export const verificarReservaAtiva = async (produtoId: string, varianteId?: string): Promise<boolean> => {
     try {
-        // Primeiro, remover reservas expiradas para garantir dados atualizados
-        await removerReservasExpiradas();
-
         // Criar consulta base
         let vendaQuery;
 
@@ -170,17 +187,21 @@ export const obterReservaPorId = async (vendaId: string): Promise<Venda | null> 
 // Cancelar uma reserva
 export const cancelarReserva = async (vendaId: string): Promise<void> => {
     try {
+        console.log(`[cancelarReserva] Iniciando cancelamento da reserva: ${vendaId}`);
         const docRef = doc(db, VENDAS_COLLECTION, vendaId);
         const docSnap = await getDoc(docRef);
 
         if (!docSnap.exists()) {
+            console.error(`[cancelarReserva] Reserva com ID ${vendaId} não encontrada`);
             throw new Error(`Reserva com ID ${vendaId} não encontrada`);
         }
 
         const data = docSnap.data();
+        console.log(`[cancelarReserva] Dados da reserva:`, data);
 
         // Verifica se a reserva já está cancelada ou finalizada
         if (data.status !== VendaStatus.RESERVADO) {
+            console.warn(`[cancelarReserva] Reserva com ID ${vendaId} não está mais ativa (status: ${data.status})`);
             throw new Error(`Reserva com ID ${vendaId} não está mais ativa`);
         }
 
@@ -189,8 +210,9 @@ export const cancelarReserva = async (vendaId: string): Promise<void> => {
             status: VendaStatus.CANCELADO,
             dataCancelamento: serverTimestamp(),
         });
+        console.log(`[cancelarReserva] Reserva ${vendaId} cancelada com sucesso`);
     } catch (error) {
-        console.error(`Erro ao cancelar reserva com ID ${vendaId}:`, error);
+        console.error(`[cancelarReserva] Erro ao cancelar reserva com ID ${vendaId}:`, error);
         throw error;
     }
 };
@@ -258,5 +280,86 @@ export const removerReservasExpiradas = async (): Promise<void> => {
     } catch (error) {
         console.error("Erro ao remover reservas expiradas:", error);
         throw error;
+    }
+};
+
+// Remover reservas duplicadas
+export const removerReservasDuplicadas = async (): Promise<void> => {
+    try {
+        // Buscar todas as reservas ativas
+        const reservasQuery = query(
+            collection(db, VENDAS_COLLECTION),
+            where("status", "==", VendaStatus.RESERVADO)
+        );
+
+        const snapshot = await getDocs(reservasQuery);
+
+        // Mapear reservas para uma estrutura com a qual podemos trabalhar
+        interface ReservaSimplificada {
+            id: string;
+            produtoId: string;
+            varianteId: string | null;
+            dataReserva: any; // Timestamp do Firestore
+        }
+
+        const reservas: ReservaSimplificada[] = [];
+
+        snapshot.docs.forEach(doc => {
+            const data = doc.data();
+            reservas.push({
+                id: doc.id,
+                produtoId: data.produtoId,
+                varianteId: data.varianteId,
+                dataReserva: data.dataReserva
+            });
+        });
+
+        // Agrupar reservas por produto/variante
+        const reservasPorProduto: Record<string, ReservaSimplificada[]> = {};
+
+        reservas.forEach(reserva => {
+            const chave = `${reserva.produtoId}_${reserva.varianteId || 'null'}`;
+            if (!reservasPorProduto[chave]) {
+                reservasPorProduto[chave] = [];
+            }
+            reservasPorProduto[chave].push(reserva);
+        });
+
+        // Para cada grupo de reservas, manter apenas a mais recente
+        const reservasParaCancelar: string[] = [];
+
+        for (const chave in reservasPorProduto) {
+            const grupo = reservasPorProduto[chave];
+            if (grupo.length > 1) {
+                // Ordenar por data de reserva (a mais recente primeiro)
+                grupo.sort((a, b) => {
+                    const dataA = a.dataReserva?.toMillis ? a.dataReserva.toMillis() : 0;
+                    const dataB = b.dataReserva?.toMillis ? b.dataReserva.toMillis() : 0;
+                    return dataB - dataA;
+                });
+
+                // Manter a primeira (mais recente) e marcar as outras para cancelamento
+                for (let i = 1; i < grupo.length; i++) {
+                    reservasParaCancelar.push(grupo[i].id);
+                }
+            }
+        }
+
+        // Cancelar as reservas duplicadas
+        const promises = reservasParaCancelar.map(async (id) => {
+            await updateDoc(doc(db, VENDAS_COLLECTION, id), {
+                status: VendaStatus.CANCELADO,
+                dataCancelamento: serverTimestamp(),
+            });
+            console.log(`Reserva duplicada cancelada: ${id}`);
+        });
+
+        await Promise.all(promises);
+
+        if (reservasParaCancelar.length > 0) {
+            console.log(`${reservasParaCancelar.length} reservas duplicadas foram canceladas`);
+        }
+    } catch (error) {
+        console.error("Erro ao remover reservas duplicadas:", error);
     }
 };

@@ -19,7 +19,7 @@ export default function TimerReserva({ expirationTime, onExpire, reservaId }: Ti
         } else {
             setWarning(false);
         }
-        
+
         // Se expirou, limpar do localStorage
         if (expired && reservaId) {
             // Remover todas as reservas relacionadas a este ID
@@ -66,8 +66,8 @@ export default function TimerReserva({ expirationTime, onExpire, reservaId }: Ti
             <div className="w-full bg-gray-800 rounded-full h-2.5">
                 <div
                     className={`h-2.5 rounded-full ${percentLeft > 50 ? 'bg-green-600' :
-                            percentLeft > 20 ? 'bg-yellow-500' :
-                                'bg-red-600'
+                        percentLeft > 20 ? 'bg-yellow-500' :
+                            'bg-red-600'
                         }`}
                     style={{ width: `${percentLeft}%` }}
                 ></div>

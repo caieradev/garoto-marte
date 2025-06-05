@@ -10,6 +10,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 import { AlertCircle, ArrowLeft, ShoppingBag } from "lucide-react";
 import TimerReserva from "@/components/checkout/TimerReserva";
 import { Product, ProductType, TieVariant } from "@/lib/types";
@@ -34,6 +44,7 @@ export default function CheckoutResumoPage() {
     const [reservaId, setReservaId] = useState<string | null>(null);
     const [expirationTime, setExpirationTime] = useState<Date | null>(null);
     const [shippingData, setShippingData] = useState<DadosEntrega | null>(null);
+    const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
 
     // Dados de formulário para checkout
     const [nome, setNome] = useState("");
@@ -73,10 +84,18 @@ export default function CheckoutResumoPage() {
                 prazo: Number(fretePrazo),
                 empresa: freteEmpresa
             }
-        };
-
-        // Função para carregar dados e criar reserva
+        };        // Função para carregar dados e criar reserva
         const iniciarCheckout = async () => {
+            // Verificar se já há um checkout em andamento (evitar requisições duplicadas)
+            const checkoutLock = `checkout_lock_${produtoId}${varianteId ? `_${varianteId}` : ''}`;
+            if (sessionStorage.getItem(checkoutLock) === 'true') {
+                console.log('Checkout já em andamento, evitando duplicação');
+                return;
+            }
+
+            // Definir lock para evitar múltiplas execuções simultâneas
+            sessionStorage.setItem(checkoutLock, 'true');
+
             try {
                 // Buscar produto
                 const produtoData = await getProductById(produtoId);
@@ -106,7 +125,7 @@ export default function CheckoutResumoPage() {
                 const reservaKey = `reserva_${produtoId}${varianteId ? `_${varianteId}` : ''}`;
                 const reservaLocalStorage = localStorage.getItem(reservaKey);
                 let reservaAtual: string | null = null;
-                
+
                 if (reservaLocalStorage) {
                     try {
                         const reservaData = JSON.parse(reservaLocalStorage);
@@ -138,7 +157,7 @@ export default function CheckoutResumoPage() {
                     if (reserva && reserva.expiraEm) {
                         const expiraEm = reserva.expiraEm.toDate();
                         setExpirationTime(expiraEm);
-                        
+
                         // Salvar no localStorage para persistir em recarregamentos
                         localStorage.setItem(reservaKey, JSON.stringify({
                             id: novaReservaId,
@@ -153,36 +172,47 @@ export default function CheckoutResumoPage() {
                 setError(error.message || "Ocorreu um erro ao iniciar o processo de checkout");
             } finally {
                 setLoading(false);
+                // Remover o lock ao finalizar
+                const checkoutLock = `checkout_lock_${produtoId}${varianteId ? `_${varianteId}` : ''}`;
+                sessionStorage.removeItem(checkoutLock);
             }
         };
 
+        // Executar iniciarCheckout apenas uma vez
         iniciarCheckout();
 
-        // Cleanup - cancelar reserva se o usuário sair da página
-        return () => {
-            if (reservaId) {
-                cancelarReserva(reservaId).catch(err => {
-                    console.error("Erro ao cancelar reserva:", err);
-                });
-                
-                // Remover do localStorage também
-                if (produtoId) {
-                    const reservaKey = `reserva_${produtoId}${varianteId ? `_${varianteId}` : ''}`;
-                    localStorage.removeItem(reservaKey);
-                }
-            }
+        // Não queremos cancelar a reserva ao recarregar a página, então vamos verificar
+        // se estamos realmente saindo do site/aplicação
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            // Este código é executado apenas quando o usuário tenta fechar a página/aba
+            // ou navegar para fora do site, não durante recarregamentos normais
+
+            // Não cancelamos a reserva diretamente aqui porque o evento beforeunload
+            // pode ser cancelado pelo usuário. Em vez disso, avisamos que as mudanças
+            // podem ser perdidas.
+            e.preventDefault();
+            e.returnValue = '';
         };
-    }, [searchParams]);    // Handler para expiração da reserva
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+
+            // Não cancelamos a reserva ao recarregar a página
+            // O cancelamento acontece apenas quando o usuário clica em "Cancelar reserva"
+        };
+    }, [searchParams]);// Handler para expiração da reserva
     const handleExpire = () => {
         toast.error("Sua reserva expirou!");
-        
+
         // Limpar o localStorage 
         if (product?.id) {
             const varianteId = searchParams?.get("varianteId");
             const reservaKey = `reserva_${product.id}${varianteId ? `_${varianteId}` : ''}`;
             localStorage.removeItem(reservaKey);
         }
-        
+
         router.push(`/produto/${product?.id}`);
     };
 
@@ -211,6 +241,29 @@ export default function CheckoutResumoPage() {
             toast.error("Erro ao processar pagamento. Tente novamente.");
         } finally {
             setProcessando(false);
+        }
+    };
+
+    // Handler para cancelar a reserva e voltar para a página do produto
+    const handleCancelReservation = async () => {
+        if (!reservaId || !product) return;
+
+        try {
+            // Cancelar a reserva no Firebase
+            await cancelarReserva(reservaId);
+
+            // Limpar o localStorage
+            if (product.id) {
+                const varianteId = searchParams?.get("varianteId");
+                const reservaKey = `reserva_${product.id}${varianteId ? `_${varianteId}` : ''}`;
+                localStorage.removeItem(reservaKey);
+            }
+
+            toast.success("Reserva cancelada com sucesso");
+            router.push(`/produto/${product.id}`);
+        } catch (error) {
+            console.error("Erro ao cancelar reserva:", error);
+            toast.error("Erro ao cancelar reserva. Tente novamente.");
         }
     };
 
@@ -251,9 +304,9 @@ export default function CheckoutResumoPage() {
                         <AlertDescription>{error}</AlertDescription>
                     </Alert>
                     <div className="flex justify-center mt-4">
-                        <Link href="/produtos">
+                        <Link href="/brado">
                             <Button variant="outline" className="mr-2">
-                                <ArrowLeft className="mr-2 h-4 w-4" /> Voltar para produtos
+                                <ArrowLeft className="mr-2 h-4 w-4" /> Voltar para produtos BRADO
                             </Button>
                         </Link>
                     </div>
@@ -464,15 +517,15 @@ export default function CheckoutResumoPage() {
                             <span>{formatCurrency(getValorTotal())}</span>
                         </div>
                     </div>
-                </div>
-
-                {/* Botões de Ação */}
+                </div>                {/* Botões de Ação */}
                 <div className="flex flex-col sm:flex-row justify-between gap-4">
-                    <Link href={`/produto/${product?.id}`} passHref>
-                        <Button variant="outline" className="w-full sm:w-auto">
-                            <ArrowLeft className="mr-2 h-4 w-4" /> Voltar para o produto
-                        </Button>
-                    </Link>
+                    <Button
+                        variant="outline"
+                        className="w-full sm:w-auto"
+                        onClick={() => setShowCancelConfirmation(true)}
+                    >
+                        <ArrowLeft className="mr-2 h-4 w-4" /> Voltar para o produto
+                    </Button>
 
                     <Button
                         className="w-full sm:w-auto"
@@ -488,6 +541,31 @@ export default function CheckoutResumoPage() {
                         )}
                     </Button>
                 </div>
+
+                {/* Modal de confirmação para cancelar reserva */}
+                <AlertDialog
+                    open={showCancelConfirmation}
+                    onOpenChange={setShowCancelConfirmation}
+                >
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Cancelar reserva?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Ao voltar para a página do produto, sua reserva será cancelada e o produto
+                                será liberado para outros compradores. Tem certeza que deseja continuar?
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Continuar comprando</AlertDialogCancel>
+                            <AlertDialogAction
+                                variant="destructive"
+                                onClick={handleCancelReservation}
+                            >
+                                Cancelar reserva
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
         </div>
     );

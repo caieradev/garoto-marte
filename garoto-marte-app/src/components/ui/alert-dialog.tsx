@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { 
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -65,9 +65,9 @@ const AlertDialogFooter = ({ children, className, ...props }: React.ComponentPro
   )
 }
 
-const AlertDialogAction = ({ children, ...props }: React.ComponentProps<typeof Button>) => {
+const AlertDialogAction = ({ children, variant = "default", ...props }: React.ComponentProps<typeof Button>) => {
   return (
-    <Button {...props}>
+    <Button variant={variant} {...props}>
       {children}
     </Button>
   )
