@@ -358,3 +358,34 @@ export const removerReservasDuplicadas = async (): Promise<void> => {
         console.error("Erro ao remover reservas duplicadas:", error);
     }
 };
+
+// Resumo de vendas para painel admin
+export const getResumoVendas = async () => {
+    // Busca todas as vendas
+    const vendasSnap = await getDocs(collection(db, VENDAS_COLLECTION));
+    let totalVendas = 0;
+    let vendasAprovadas = 0;
+    let vendasPendentes = 0;
+    let vendasCanceladas = 0;
+    let faturamentoTotal = 0;
+
+    vendasSnap.forEach(doc => {
+        const v = doc.data();
+        totalVendas++;
+        if (v.status === 'finalizado') {
+            vendasAprovadas++;
+            faturamentoTotal += v.valorTotal || 0;
+        } else if (v.status === 'reservado') {
+            vendasPendentes++;
+        } else if (v.status === 'cancelado' || v.status === 'expirado') {
+            vendasCanceladas++;
+        }
+    });
+    return {
+        totalVendas,
+        vendasAprovadas,
+        vendasPendentes,
+        vendasCanceladas,
+        faturamentoTotal
+    };
+};
