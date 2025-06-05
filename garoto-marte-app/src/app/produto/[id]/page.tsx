@@ -1,15 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { getProductById, markProductAsSold, markTieVariantAsSold } from "@/lib/services/products";
+import { verificarReservaAtiva } from "@/lib/services/vendas";
 import { Product, ProductType, TieProduct, RegularProduct, TieVariant } from "@/lib/types";
+import { ShippingOption } from "@/lib/types/shipping";
 import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { AlertCircle } from "lucide-react";
+import ReservedIndicator from "@/components/products/ReservedIndicator";
 
 interface PageProps {
     params: Promise<{
@@ -26,46 +30,103 @@ export default function Page({ params }: PageProps) {
     const [cep, setCep] = useState("");
     const [cepError, setCepError] = useState("");
     const [shippingLoading, setShippingLoading] = useState(false);
-    const [shippingOptions, setShippingOptions] = useState<any[]>([]);
+    const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
     const [shippingError, setShippingError] = useState("");
-    const router = useRouter();
+    const [selectedShippingOption, setSelectedShippingOption] = useState<number | null>(null);
+    const [isReserved, setIsReserved] = useState(false);
+    const router = useRouter();    // Função para verificar reservas
+    const checkReservation = useCallback(async () => {
+        if (!product || !product.id) return;
 
-    // Carregar dados do produto
-    useEffect(() => {
-        const fetchProduct = async () => {
-            try {
-                const resolvedParams = await params;
-                const productData = await getProductById(resolvedParams.id);
-                setProduct(productData);
-
-                // Se for um produto do tipo gravata, seleciona a primeira variante disponível
-                if (productData?.type === ProductType.TIE) {
-                    const tieProduct = productData as TieProduct;
-                    const availableVariant = tieProduct.variants.find(v => !v.sold);
-                    setSelectedVariant(availableVariant || null);
-                }
-            } catch (error) {
-                console.error("Erro ao carregar produto:", error);
-                toast.error("Erro ao carregar detalhes do produto");
-            } finally {
-                setLoading(false);
+        try {
+            const productId = product.id;
+            if (product.type === ProductType.TIE && selectedVariant?.id) {
+                const isReserved = await verificarReservaAtiva(productId, selectedVariant.id);
+                setIsReserved(isReserved);
+            } else {
+                const isReserved = await verificarReservaAtiva(productId);
+                setIsReserved(isReserved);
             }
-        };
+        } catch (error) {
+            console.error("Erro ao verificar reservas:", error);
+        }
+    }, [product, selectedVariant]);
 
-        fetchProduct();
-    }, [params]);
+    // Efeito para verificar reservas ao carregar e periodicamente
+    useEffect(() => {
+        // Verificar imediatamente
+        checkReservation();
 
-    // Função para mudar a imagem exibida
-    const handleImageChange = (index: number) => {
-        setCurrentImageIndex(index);
-    };
+        // Configurar um intervalo para verificar reservas a cada 10 segundos (reduzido de 30)
+        const checkReservationInterval = setInterval(checkReservation, 10000);
 
-    // Função para selecionar variante de gravata
-    const handleVariantSelect = (variant: TieVariant) => {
-        setSelectedVariant(variant);
-    };    // Função para iniciar processo de compra
+        // Limpar o intervalo quando o componente for desmontado
+        return () => clearInterval(checkReservationInterval);
+    }, [checkReservation]);
+
+    // Verificar reserva quando a variante selecionada mudar
+    useEffect(() => {
+        checkReservation();
+    }, [selectedVariant, checkReservation]);    // Função para iniciar processo de compra
     const handleBuyClick = async () => {
-        alert("Comprar");
+        if (!product || !product.id) {
+            toast.error("Produto não encontrado");
+            return;
+        }
+
+        // Verificar novamente se o produto está reservado antes de prosseguir
+        await checkReservation();
+        if (isReserved) {
+            toast.error("Este produto acabou de ser reservado por outro cliente. Por favor, tente outro produto.");
+            return;
+        }
+
+        // Validar se o usuário selecionou o frete
+        if (shippingOptions.length === 0) {
+            toast.error("Por favor, calcule o frete antes de prosseguir");
+            return;
+        }
+
+        // Validar se o usuário selecionou uma opção de frete
+        if (selectedShippingOption === null) {
+            toast.error("Por favor, selecione uma opção de frete");
+            return;
+        }
+
+        // Obter a opção de frete selecionada
+        const validOptions = shippingOptions.filter(opt => !opt.error);
+        if (selectedShippingOption >= validOptions.length) {
+            toast.error("Opção de frete inválida");
+            return;
+        }
+
+        const selectedShipping = validOptions[selectedShippingOption];
+
+        try {
+            // Construir URL com parâmetros para a página de checkout
+            const params = new URLSearchParams();
+            params.append("produtoId", product.id);
+
+            // Se for gravata, adicionar varianteId
+            if (product.type === ProductType.TIE && selectedVariant?.id) {
+                params.append("varianteId", selectedVariant.id);
+            }
+
+            // Adicionar dados do frete
+            params.append("cep", cep.replace(/\D/g, ""));
+            params.append("freteNome", selectedShipping.name);
+            params.append("fretePreco", selectedShipping.price.toString());
+            params.append("fretePrazo", selectedShipping.delivery_time.toString());
+            params.append("freteEmpresa", selectedShipping.company.name);
+
+            // Navegar para checkout
+            setProcessing(true);
+            router.push(`/checkout/resumo?${params.toString()}`);
+        } catch (error) {
+            console.error("Erro ao processar checkout:", error);
+            toast.error("Ocorreu um erro ao processar sua compra. Tente novamente.");
+            setProcessing(false);
+        }
     };
 
     // Validação e formatação de CEP
@@ -79,17 +140,23 @@ export default function Page({ params }: PageProps) {
         const value = e.target.value.replace(/\D/g, "");
         setCep(formatCEP(value));
         setCepError("");
-    };
-
-    const handleShippingCalc = async () => {
+    }; const handleShippingCalc = async () => {
         setShippingError("");
         if (!isValidCEP(cep)) {
             setCepError("CEP inválido. Use o formato 00000-000");
             setShippingOptions([]);
             return;
         }
+
+        if (!product) {
+            setShippingError("Produto não encontrado");
+            return;
+        }
+
         setShippingLoading(true);
         setShippingOptions([]);
+        setSelectedShippingOption(null);
+
         try {
             const price = product?.type === ProductType.TIE && selectedVariant ? selectedVariant.price : product?.price;
             const res = await fetch("/api/shipping-calculate", {
@@ -99,16 +166,81 @@ export default function Page({ params }: PageProps) {
             });
             const data = await res.json();
             if (!res.ok || !Array.isArray(data)) {
-                setShippingError(data.error || "Erro ao calcular frete");
+                const errorMsg = typeof data.error === 'string' ? data.error : "Erro ao calcular frete";
+                setShippingError(errorMsg);
                 setShippingOptions([]);
             } else {
-                setShippingOptions(data);
+                const validOptions = data.filter((opt: ShippingOption) => !opt.error);
+                setShippingOptions(data as ShippingOption[]);
+
+                // Selecionar a primeira opção por padrão, se houver
+                if (validOptions.length > 0) {
+                    setSelectedShippingOption(0);
+                }
             }
         } catch (err) {
             setShippingError("Erro ao consultar frete. Tente novamente.");
         } finally {
             setShippingLoading(false);
         }
+    };
+
+    // Carregar dados do produto
+    useEffect(() => {
+        const fetchProduct = async () => {
+            try {
+                const resolvedParams = await params;
+                const productId = resolvedParams.id;
+                const productData = await getProductById(productId);
+
+                if (!productData) {
+                    throw new Error("Produto não encontrado");
+                }
+
+                setProduct(productData);
+
+                // Verificar se o produto ou variante selecionada está reservado
+                if (productData.type === ProductType.TIE) {
+                    const tieProduct = productData as TieProduct;
+
+                    // Procura uma variante disponível (não vendida)
+                    const availableVariant = tieProduct.variants.find(v => !v.sold);
+                    setSelectedVariant(availableVariant || null);
+
+                    // Se tiver variante selecionada, verifica se está reservada
+                    if (availableVariant && availableVariant.id) {
+                        const isVariantReserved = await verificarReservaAtiva(productId, availableVariant.id);
+                        setIsReserved(isVariantReserved);
+                    }
+                } else {
+                    // Para produtos regulares, verifica se está reservado
+                    const isProductReserved = await verificarReservaAtiva(productId);
+                    setIsReserved(isProductReserved);
+                }
+            } catch (error) {
+                console.error("Erro ao carregar produto:", error);
+                toast.error("Erro ao carregar detalhes do produto");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProduct();
+
+        // Limpeza: remover qualquer intervalo anterior de verificação de reservas
+        return () => {
+            // Essa limpeza é feita no outro useEffect específico para isso
+        };
+    }, [params]);
+
+    // Função para mudar a imagem exibida
+    const handleImageChange = (index: number) => {
+        setCurrentImageIndex(index);
+    };
+
+    // Função para selecionar variante de gravata
+    const handleVariantSelect = (variant: TieVariant) => {
+        setSelectedVariant(variant);
     };
 
     // Renderização condicional baseada no estado de carregamento
@@ -153,11 +285,9 @@ export default function Page({ params }: PageProps) {
         ].filter(Boolean) as string[]
         : [mainImage, secondaryImage].filter(Boolean) as string[];
 
-    const currentImage = allImages[currentImageIndex];
-
-    // Verifica se o produto está disponível para compra
-    const isRegularProductAvailable = product.type === ProductType.REGULAR && !product.sold;
-    const isTieProductAvailable = product.type === ProductType.TIE && selectedVariant && !selectedVariant.sold;
+    const currentImage = allImages[currentImageIndex];    // Verifica se o produto está disponível para compra
+    const isRegularProductAvailable = product.type === ProductType.REGULAR && !product.sold && !isReserved;
+    const isTieProductAvailable = product.type === ProductType.TIE && selectedVariant && !selectedVariant.sold && !isReserved;
     const isProductAvailable = isRegularProductAvailable || isTieProductAvailable;
 
     // Dicionário para traduzir as chaves das medidas para português
@@ -196,14 +326,14 @@ export default function Page({ params }: PageProps) {
                                 <button
                                     key={index}
                                     onClick={() => handleImageChange(index)}
-                                    className={`relative h-20 w-20 rounded-md overflow-hidden flex-shrink-0 border-2 ${currentImageIndex === index ? "border-red-600" : "border-transparent"
+                                    className={`relative h-20 w-20 rounded-md overflow-hidden flex-shrink-0 border-3 ${currentImageIndex === index ? "border-red-600" : "border-transparent"
                                         }`}
                                 >
                                     <Image
                                         src={img}
                                         alt={`Miniatura ${index + 1}`}
                                         fill
-                                        className="object-cover"
+                                        className="object-cover bg-white"
                                     />
                                 </button>
                             ))}
@@ -224,12 +354,15 @@ export default function Page({ params }: PageProps) {
                             {product.collectionName && (
                                 <Badge variant="secondary">{product.collectionName}</Badge>
                             )}
-                        </div>
-                        <p className="text-3xl font-semibold mb-6">
+                        </div>                        <p className="text-3xl font-semibold mb-6">
                             {product.type === ProductType.TIE && selectedVariant
                                 ? formatCurrency(selectedVariant.price)
                                 : formatCurrency(product.price)}
                         </p>
+
+                        {/* Indicador de Reserva */}
+                        <ReservedIndicator isReserved={isReserved} />
+
                         {product.type === ProductType.REGULAR && (product as RegularProduct).tamanho && (
                             <div className="mb-4">
                                 <span className="font-medium">Tamanho:</span> {(product as RegularProduct).tamanho}
@@ -321,34 +454,55 @@ export default function Page({ params }: PageProps) {
                             Não sei meu CEP
                         </a>
                         {cepError && <div className="text-red-500 text-xs mt-1">{cepError}</div>}
-                        {shippingError && <div className="text-red-500 text-xs mt-1">{shippingError}</div>}
-                        {shippingOptions.length > 0 && (
+                        {shippingError && <div className="text-red-500 text-xs mt-1">{shippingError}</div>}                        {shippingOptions.length > 0 && (
                             <div className="mt-2 space-y-1">
-                                <div className="font-medium text-sm mb-1">Opções de frete:</div>
+                                <div className="font-medium text-sm mb-1">Selecione uma opção de frete:</div>
                                 {shippingOptions.filter(opt => !opt.error).map((opt, idx) => (
-                                    <div key={idx} className="flex items-center justify-between border-b border-gray-700 py-1 text-sm gap-2">
+                                    <label
+                                        key={idx}
+                                        className={`flex items-center justify-between border-b border-gray-700 py-2 text-sm gap-2 cursor-pointer hover:bg-gray-900 px-2 rounded ${selectedShippingOption === idx ? "bg-gray-800 border-l-4 border-l-red-600 pl-2" : ""
+                                            }`}
+                                    >
                                         <div className="flex items-center gap-2">
+                                            <input
+                                                type="radio"
+                                                name="shipping-option"
+                                                value={idx}
+                                                checked={selectedShippingOption === idx}
+                                                onChange={() => setSelectedShippingOption(idx)}
+                                                className="text-red-600"
+                                            />
                                             {opt.company?.picture && (
                                                 <Image src={opt.company.picture} alt={opt.company.name} width={28} height={28} className="rounded bg-white border" />
                                             )}
                                             <span>{opt.company?.name || ""} {opt.name && opt.name !== ".Package" && opt.name !== ".Com" ? `- ${opt.name}` : ""}</span>
                                         </div>
                                         <span>{opt.price ? formatCurrency(Number(opt.price)) : "-"} ({opt.delivery_time} dias)</span>
-                                    </div>
+                                    </label>
                                 ))}
                             </div>
                         )}
-                    </div>
+                    </div>                    {/* Botões de Ação */}
+                    <div className="space-y-4 pt-4">                        <Button
+                        onClick={handleBuyClick}
+                        disabled={!isProductAvailable || processing || selectedShippingOption === null}
+                        className={`w-full py-6 text-lg ${shippingOptions.length > 0 && selectedShippingOption === null
+                            ? "bg-amber-600 hover:bg-amber-700"
+                            : ""
+                            }`}
+                    >
+                        {processing ? "Processando..." :
+                            isReserved ? "Reservado" :
+                                !isProductAvailable ? "Esgotado" :
+                                    selectedShippingOption === null && shippingOptions.length > 0 ? "Selecione uma opção de frete acima" :
+                                        "Comprar Agora"}
+                    </Button>
 
-                    {/* Botões de Ação */}
-                    <div className="space-y-4 pt-4">
-                        <Button
-                            onClick={handleBuyClick}
-                            disabled={!isProductAvailable || processing}
-                            className="w-full py-6 text-lg"
-                        >
-                            {processing ? "Processando..." : isProductAvailable ? "Comprar Agora" : "Esgotado"}
-                        </Button>
+                        {shippingOptions.length === 0 && (
+                            <p className="text-sm text-center text-muted-foreground">
+                                Calcule o frete para continuar com a compra
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>

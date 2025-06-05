@@ -9,7 +9,7 @@ import { Footer } from "@/components/layout/footer";
 const firaCode = Fira_Code({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-    title: "Garoto Marte - Streetwear Exclusiva",
+    title: "Garoto Marte",
     description: "Roupas streetwear únicas e exclusivas",
 };
 

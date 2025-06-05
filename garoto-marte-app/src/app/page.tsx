@@ -4,7 +4,7 @@ import { HeroSection } from "@/components/home/hero-section";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Garoto Marte - Streetwear Exclusiva",
+    title: "Garoto Marte",
     description: "Roupas streetwear únicas e exclusivas - Cada peça é única e tem apenas um exemplar disponível.",
 };
 
