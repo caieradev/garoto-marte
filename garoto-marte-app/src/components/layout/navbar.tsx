@@ -8,15 +8,15 @@ import { Button } from "@/components/ui/button";
 
 // Dividing navigation into two sections
 const navigationLeft = [
-    { name: "SOBRE", href: "/sobre" },
+    // { name: "SOBRE", href: "/sobre" },
     { name: "BRADO", href: "/brado" },
-    { name: "ACERVO", href: "/acervo" },
+    // { name: "ACERVO", href: "/acervo" },
 ];
 
-const navigationRight = [
-    { name: "ORÇAMENTO", href: "/orcamento" },
-    { name: "DÚVIDAS", href: "/faq" },
-];
+// const navigationRight = [
+// { name: "ORÇAMENTO", href: "/orcamento" },
+// { name: "DÚVIDAS", href: "/faq" },
+// ];
 
 export function Navbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -82,8 +82,8 @@ export function Navbar() {
 
                 {/* Desktop navigation - Right Section */}
                 <div className="hidden md:flex md:flex-1 md:items-center md:justify-end">
-                    {navigationRight.map((item) => (
-                        <Link
+                    {/*{navigationRight.map((item) => (
+                         <Link
                             key={item.name}
                             href={item.href}
                             className="text-lg leading-6 text-white hover:text-gray-300 px-3 py-2 transition-colors relative group ml-4"
@@ -91,7 +91,7 @@ export function Navbar() {
                             {item.name}
                             <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
                         </Link>
-                    ))}
+                    ))} */}
                     <div className="ml-6 flex items-center">
                         <Link href="/perfil" className="text-sm leading-6 text-white hover:text-gray-300 transition-colors">
                             <User className="h-6 w-6" aria-hidden="true" />
@@ -132,7 +132,9 @@ export function Navbar() {
 
                             <div className="-my-6 divide-y divide-gray-800 text-center">
                                 <div className="space-y-2 py-6">
-                                    {[...navigationLeft, ...navigationRight].map((item) => (
+                                    {[...navigationLeft,
+                                        //  ...navigationRight
+                                    ].map((item) => (
                                         <Link
                                             key={item.name}
                                             href={item.href}
