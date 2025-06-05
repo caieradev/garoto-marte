@@ -11,6 +11,9 @@ const firaCode = Fira_Code({ subsets: ["latin"] });
 export const metadata: Metadata = {
     title: "Garoto Marte",
     description: "Roupas streetwear únicas e exclusivas",
+    icons: {
+        icon: '/logo-gm.png',
+    },
 };
 
 export default function RootLayout({
