@@ -404,7 +404,7 @@ export function BradoHeroSection() {
                     />
                 </div>
             </div>
-            <h2 className="text-center mt-10 text-2xl mx-22 font-thin mb-12">Representadas por cortes estruturados pré-estabelecidos na curadoria dos brechós, tecidos lisos e detalhes marcantes. As peças misturam formas amplas e detalhes ajustados, criando uma harmonia entre imponência e conforto.</h2>
+            <h2 className="text-center mt-10  text-lg md:text-2xl  mx-22 font-thin mb-12">Representadas por cortes estruturados pré-estabelecidos na curadoria dos brechós, tecidos lisos e detalhes marcantes. As peças misturam formas amplas e detalhes ajustados, criando uma harmonia entre imponência e conforto.</h2>
 
             {/* mais 4 produtos */}            <div className="flex flex-col md:flex-row w-full items-center justify-center">
                 {/* Usando nosso componente reutilizável para o terceiro grupo de produtos */}
@@ -438,7 +438,7 @@ export function BradoHeroSection() {
                     />
                 </div>
             </div>
-            <h2 className="text-center mt-10 text-2xl mx-22 font-thin mb-12">
+            <h2 className="text-center mt-10  text-lg md:text-2xl  mx-22 font-thin mb-12">
                 Contém pinturas dinâmicas e fluídas, texturas contrastantes e uma paleta de cores que dialoga entre tons neutros (cinza claro e azul bebê) e vibrantes (vermelho intenso, vermelho bordô e azul marinho), simbolizando a união entre a natureza e a força emocional.</h2>
 
             <div className="flex flex-col md:flex-row w-full items-center justify-center">
