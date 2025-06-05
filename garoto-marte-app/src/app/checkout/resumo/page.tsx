@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -36,7 +36,9 @@ import { toast } from "sonner";
 function CheckoutResumoContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const beforeUnloadRef = useRef<(e: BeforeUnloadEvent) => void>(() => { });
 
+    // Estados
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [product, setProduct] = useState<Product | null>(null);
@@ -58,11 +60,13 @@ function CheckoutResumoContent() {
     const [estado, setEstado] = useState("");
 
     // Processar pagamento
-    const [processando, setProcessando] = useState(false);    // Buscar dados do produto e criar reserva
+    const [processando, setProcessando] = useState(false);
+
+    // Buscar dados do produto e criar reserva
     useEffect(() => {
         const produtoId = searchParams?.get("produtoId");
         const varianteId = searchParams?.get("varianteId");
-        const cep = searchParams?.get("cep");
+        const cep = searchParams?.get("freteNome");
         const freteNome = searchParams?.get("freteNome");
         const fretePreco = searchParams?.get("fretePreco");
         const fretePrazo = searchParams?.get("fretePrazo");
@@ -184,25 +188,34 @@ function CheckoutResumoContent() {
         // Não queremos cancelar a reserva ao recarregar a página, então vamos verificar
         // se estamos realmente saindo do site/aplicação
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            // Este código é executado apenas quando o usuário tenta fechar a página/aba
-            // ou navegar para fora do site, não durante recarregamentos normais
-
-            // Não cancelamos a reserva diretamente aqui porque o evento beforeunload
-            // pode ser cancelado pelo usuário. Em vez disso, avisamos que as mudanças
-            // podem ser perdidas.
-            e.preventDefault();
-            e.returnValue = '';
+            if (!processando) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
         };
 
-        window.addEventListener('beforeunload', handleBeforeUnload);
-
         return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-
             // Não cancelamos a reserva ao recarregar a página
             // O cancelamento acontece apenas quando o usuário clica em "Cancelar reserva"
         };
-    }, [searchParams]);// Handler para expiração da reserva
+    }, [searchParams]);
+
+    // MOVER ESTE USEEFFECT PARA CÁ - antes de qualquer return condicional
+    useEffect(() => {
+        beforeUnloadRef.current = (e: BeforeUnloadEvent) => {
+            if (!processando) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        };
+
+        const listener = (e: BeforeUnloadEvent) => beforeUnloadRef.current(e);
+        window.addEventListener('beforeunload', listener);
+
+        return () => window.removeEventListener('beforeunload', listener);
+    }, [processando]);
+
+    // Handler para expiração da reserva
     const handleExpire = () => {
         toast.error("Sua reserva expirou!");
 
@@ -228,6 +241,8 @@ function CheckoutResumoContent() {
 
         setProcessando(true);
         try {
+            // Remove o alerta de beforeunload durante o processamento
+            window.onbeforeunload = null;
             // Chamar API para criar preferência Mercado Pago
             const valorProduto = variant ? variant.price : product.price;
             const valorFrete = shippingData?.frete.preco || 0;
@@ -330,6 +345,7 @@ function CheckoutResumoContent() {
         );
     }
 
+    // Return principal do componente
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="max-w-3xl mx-auto">
